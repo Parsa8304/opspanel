@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Light mode (default) ────────────────────────── */
+:root {
+  --bg-main:    #f0f4f8;
+  --bg-panel:   #ffffff;
+  --bg-card:    #f5f7fa;
+  --border:     #d8e0eb;
+
+  --primary:    #183661;
+  --accent:     #C7B299;
+
+  --text-main:      #0f172a;
+  --text-secondary: #374151;
+  --text-muted:     #6b7280;
+
+  --danger:  #ef4444;
+  --warning: #f59e0b;
+  --success: #10b981;
+
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ─── Dark mode ───────────────────────────────────── */
+.dark {
+  --bg-main:    #080d14;
+  --bg-panel:   #111821;
+  --bg-card:    #151d28;
+  --border:     #263241;
+
+  --text-main:      #f5f7fa;
+  --text-secondary: #b6bfcc;
+  --text-muted:     #7b8494;
+
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.35);
+}
+
+html[dir="rtl"] {
+  font-family: "Vazirmatn", "IRANSans", "Segoe UI", Tahoma, sans-serif;
+}
+
+html, body { padding: 0; margin: 0; }
+
+/* ─── Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar            { width: 6px; height: 6px; }
+::-webkit-scrollbar-track      { background: transparent; }
+::-webkit-scrollbar-thumb      { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover{ background: rgba(199,178,153,0.5); }
+
+/* ─── Sidebar — always dark regardless of theme ───── */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 1px 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #8b95a5;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-item:hover {
+  background: rgba(199, 178, 153, 0.08);
+  color: #f5f7fa;
+}
+.sidebar-item:hover .sidebar-icon {
+  color: #b6bfcc;
+}
+.sidebar-item.active {
+  background: #183661;
+  border-left: 3px solid #C7B299;
+  padding-left: 9px;
+  color: #ffffff;
+}
+.sidebar-item.active .sidebar-icon {
+  color: #C7B299;
+}
+.sidebar-icon {
+  flex-shrink: 0;
+  color: #4a5568;
+  transition: color 0.15s ease;
+}
+
+/* ─── Sidebar footer buttons — always dark ────────── */
+.sidebar-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 6px;
+  padding: 6px 0;
+  font-size: 12px;
+  background: #151d28;
+  color: #4a5568;
+  border: 1px solid #263241;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.sidebar-btn:hover {
+  color: #f5f7fa;
+  background: #1c2a3d;
+}
+.sidebar-btn.danger:hover {
+  color: #ef4444;
+}
+
+/* ─── Light mode: form inputs and buttons ─────────── */
+:root:not(.dark) input,
+:root:not(.dark) select,
+:root:not(.dark) textarea {
+  color-scheme: light;
+}
+
+@layer utilities {
+  .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+}

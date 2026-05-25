@@ -1,0 +1,60 @@
+---
+# Section 17 — migrate_dump_restore role (REAL, parametrized via extravars).
+#
+# Strategy: consistent logical dump on the SOURCE, transfer, restore on the
+# TARGET. Engine-aware: pg_dump | mysqldump | redis-cli SAVE+RDB copy.
+# A short consistency gap exists between dump start and cutover; the panel
+# either accepts the gap (operator acknowledged) or replays a delta where the
+# engine supports it. The SOURCE keeps serving until commit.
+#
+# Extravars: engine, service, source_ssh, target_ssh, transfer_dir,
+#   source_dsn, target_dsn, dump_file.
+- name: "Dump/restore migration of {{ service }} ({{ engine }})"
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "[postgres] pg_dump source (consistent snapshot)"
+      ansible.builtin.shell:
+        cmd: "pg_dump '{{ source_dsn }}' -Fc -f {{ transfer_dir }}/{{ dump_file }}"
+      when: engine == 'postgres'
+      changed_when: true
+
+    - name: "[mysql] mysqldump source (single-transaction)"
+      ansible.builtin.shell:
+        cmd: >-
+          mysqldump --single-transaction --routines --triggers
+          {{ mysql_db }} > {{ transfer_dir }}/{{ dump_file }}
+      when: engine == 'mysql'
+      changed_when: true
+
+    - name: "[redis] Trigger source RDB save"
+      ansible.builtin.command:
+        cmd: "redis-cli -h {{ source_host }} SAVE"
+      when: engine == 'redis'
+      changed_when: true
+
+    - name: Transfer the dump to the target
+      ansible.builtin.command:
+        cmd: >-
+          scp {{ transfer_dir }}/{{ dump_file }}
+          {{ target_ssh }}:{{ transfer_dir }}/{{ dump_file }}
+      when: target_ssh != 'local'
+      changed_when: true
+
+    - name: "[postgres] pg_restore into target"
+      ansible.builtin.shell:
+        cmd: "pg_restore --clean --if-exists -d '{{ target_dsn }}' {{ transfer_dir }}/{{ dump_file }}"
+      when: engine == 'postgres'
+      changed_when: true
+
+    - name: "[mysql] Restore dump into target"
+      ansible.builtin.shell:
+        cmd: "mysql {{ mysql_db }} < {{ transfer_dir }}/{{ dump_file }}"
+      when: engine == 'mysql'
+      changed_when: true
+
+    - name: "[redis] Load RDB into target and start"
+      ansible.builtin.shell:
+        cmd: "{{ redis_restore_cmd }}"
+      when: engine == 'redis'
+      changed_when: true

@@ -1,0 +1,22 @@
+---
+# Section 16 — Rollback play. Re-asserts the OLD (blue) container is running
+# and stops the new (green) one. The atomic proxy re-point back to blue is
+# performed by the panel; this play just guarantees the blue container is up.
+#
+# Extravars: blue_name, green_name, image_tag_old, blue_port, container_port,
+#   health_path.
+- name: Rollback to {{ blue_name }}
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Ensure blue container is running
+      ansible.builtin.command:
+        cmd: docker start {{ blue_name }}
+      changed_when: true
+      ignore_errors: true
+
+    - name: Stop green container
+      ansible.builtin.command:
+        cmd: docker stop {{ green_name }}
+      changed_when: true
+      ignore_errors: true

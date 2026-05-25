@@ -1,0 +1,65 @@
+---
+# Section 17 — migrate_replicate role (REAL, parametrized via extravars).
+#
+# Strategy: live logical/physical replication for databases that cannot
+# tolerate the snapshot data-loss window. Configure the TARGET as a replica
+# of the SOURCE, stream until replication lag ≈ 0, then promote the target
+# and switch the application connection string. The SOURCE keeps serving the
+# entire time; cutover (promote + connstring swap) is the commit step.
+#
+# This role is engine-aware. For Postgres it uses streaming replication
+# (pg_basebackup + standby). For MySQL it uses binlog replication
+# (CHANGE MASTER + START SLAVE). For Redis it uses REPLICAOF.
+#
+# HONESTY: real two-node replication requires two real DB nodes with network
+# reachability and matching versions. In the panel's single-daemon dev/test
+# environment this cannot be fully exercised; the panel reports lag honestly
+# and never claims promotion succeeded without verifying. The snapshot test
+# is the one proven end-to-end; replicate is the production path documented
+# here and wired through the Node lib's real ops where the topology allows.
+#
+# Extravars: engine, service, source_dsn, target_dsn, source_ssh, target_ssh,
+#   replication_user, replication_password, lag_threshold_bytes.
+- name: "Replicate migration of {{ service }} ({{ engine }})"
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "[postgres] Base-backup source onto target standby"
+      ansible.builtin.command:
+        cmd: >-
+          pg_basebackup -h {{ source_host }} -U {{ replication_user }}
+          -D {{ target_data_dir }} -Fp -Xs -P -R
+      when: engine == 'postgres'
+      changed_when: true
+
+    - name: "[postgres] Start target as hot standby"
+      ansible.builtin.command:
+        cmd: "pg_ctl -D {{ target_data_dir }} start"
+      when: engine == 'postgres'
+      changed_when: true
+
+    - name: "[mysql] Point target replica at source binlog"
+      ansible.builtin.command:
+        cmd: >-
+          mysql -h {{ target_host }} -e "CHANGE MASTER TO
+          MASTER_HOST='{{ source_host }}',
+          MASTER_USER='{{ replication_user }}',
+          MASTER_PASSWORD='{{ replication_password }}';
+          START SLAVE;"
+      when: engine == 'mysql'
+      changed_when: true
+
+    - name: "[redis] Make target a replica of source"
+      ansible.builtin.command:
+        cmd: >-
+          redis-cli -h {{ target_host }} REPLICAOF {{ source_host }} {{ source_port }}
+      when: engine == 'redis'
+      changed_when: true
+
+    # The panel polls real replication lag and only allows commit (promote +
+    # connection-string switch) when lag is at/under lag_threshold_bytes.
+    - name: Wait for replication lag to converge (panel-driven)
+      ansible.builtin.debug:
+        msg: >-
+          Lag convergence + promotion + connstring switch is driven by the
+          panel commit step (real lag query), not a fixed pause here.

@@ -1,0 +1,52 @@
+services:
+  panel-postgres:
+    image: postgres:16-alpine
+    container_name: panel-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: panel
+      POSTGRES_PASSWORD: panel
+      POSTGRES_DB: panel
+    ports:
+      - "5544:5432"
+    volumes:
+      - panel_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U panel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  panel-redis:
+    image: redis:7-alpine
+    container_name: panel-redis
+    restart: unless-stopped
+    ports:
+      - "6390:6379"
+
+  panel-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: panel-app:dev
+    container_name: panel-app
+    restart: unless-stopped
+    pid: "host"
+    privileged: true
+    depends_on:
+      panel-postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://panel:panel@panel-postgres:5432/panel?schema=public
+      REDIS_URL: redis://panel-redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-market-navigator-panel-secret}
+      PANEL_MASTER_KEY: ${PANEL_MASTER_KEY:-dev-only-master-key-change-in-prod-32chars}
+      DOCKER_SOCKET: /var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "3004:3000"
+
+volumes:
+  panel_pgdata:

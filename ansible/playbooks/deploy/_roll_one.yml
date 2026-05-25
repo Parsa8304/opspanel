@@ -1,0 +1,24 @@
+---
+# Included per-replica by rolling.yml.
+- name: Start replica {{ idx }}
+  ansible.builtin.command:
+    cmd: >-
+      docker run -d --name {{ service }}-r{{ idx }}-new
+      -p {{ (base_port | int) + (idx | int) }}:{{ container_port | default(8000) }}
+      {{ image_tag }}
+  changed_when: true
+
+- name: Health-check replica {{ idx }}
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ (base_port | int) + (idx | int) }}{{ health_path | default('/health') }}"
+    status_code: 200
+  register: hc
+  retries: "{{ (health_consecutive | int) * 3 }}"
+  delay: "{{ (health_interval_ms | int) / 1000 }}"
+  until: hc.status == 200
+
+- name: Stop old replica {{ idx }}
+  ansible.builtin.command:
+    cmd: docker stop {{ service }}-r{{ idx }}
+  changed_when: true
+  ignore_errors: true

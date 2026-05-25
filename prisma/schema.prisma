@@ -1,0 +1,747 @@
+// Market Navigator — Internal Tracking & Deployment Panel
+// Full data model covering all 11 sections.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Auth & Audit (Section 10) ─────────────────────────
+
+enum Role {
+  ADMIN
+  ENGINEER
+  REVIEWER
+  READONLY
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(READONLY)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+
+  auditLogs         AuditLog[]
+  verifiedItems     RegressionItem[]
+  verifiedScenarios AccessScenario[]
+  deployments       Deployment[]
+  releases          Release[]
+  reports           Report[]
+  reviewedSamples   AiSample[]
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  target    String?
+  detail    Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model AccessScenario {
+  id             String      @id @default(cuid())
+  name           String
+  description    String
+  status         CheckStatus @default(STALE)
+  lastVerifiedAt DateTime?
+  verifiedById   String?
+  verifiedBy     User?       @relation(fields: [verifiedById], references: [id])
+  staleAfterDays Int         @default(30)
+  notes          String?
+  updatedAt      DateTime    @updatedAt
+}
+
+enum CheckStatus {
+  PASSING
+  FAILING
+  STALE
+}
+
+// ───────────────────────── Q/A Tracking (Section 2) ─────────────────────────
+
+enum QaModule {
+  LOGIN
+  PROJECT_MANAGEMENT
+  QUICK_REPORT
+  DECISION_ENGINE
+  GTM_STRATEGY
+  PITCH_DECK
+  PITCH_TO_VC
+  FIND_EXPERTS
+  AI_RESEARCH_ASSISTANT
+  ASYNC_PROCESSING
+  WEBSOCKET
+  STORAGE
+  SEARCH
+  EXTERNAL_INTEGRATIONS
+  AI_INTEGRATIONS
+  ACCESS_CONTROL
+  DEPLOYMENT
+  OVERALL_READINESS
+}
+
+enum Environment {
+  DEV
+  STAGING
+  DEMO
+  OPERATIONAL
+  PROD
+}
+
+model RegressionItem {
+  id             String      @id @default(cuid())
+  module         QaModule
+  title          String
+  testSteps      String?
+  environment    Environment @default(DEMO)
+  status         CheckStatus @default(STALE)
+  lastVerifiedAt DateTime?
+  verifiedById   String?
+  verifiedBy     User?       @relation(fields: [verifiedById], references: [id])
+  staleAfterDays Int         @default(30)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  evidence       Evidence[]
+}
+
+enum EvidenceType {
+  SCREENSHOT
+  VIDEO
+  TEST_OUTPUT
+  LOG_LINK
+}
+
+model Evidence {
+  id               String         @id @default(cuid())
+  regressionItemId String
+  regressionItem   RegressionItem @relation(fields: [regressionItemId], references: [id], onDelete: Cascade)
+  type             EvidenceType
+  url              String
+  label            String?
+  createdAt        DateTime       @default(now())
+}
+
+enum CoverageStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
+model CoverageItem {
+  id        String         @id @default(cuid())
+  title     String
+  area      String
+  owner     String?
+  status    CoverageStatus @default(NOT_STARTED)
+  deadline  DateTime?
+  notes     String?
+  blockers  String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+// ──────────────────── External Integrations (Section 4) ──────────────────────
+
+model Integration {
+  id                  String   @id @default(cuid())
+  key                 String   @unique
+  name                String
+  category            String
+  enabled             Boolean  @default(false)
+  config              Json?
+  credentialExpiresAt DateTime?
+  createdAt           DateTime @default(now())
+
+  calls     IntegrationCall[]
+  incidents IntegrationIncident[]
+}
+
+model IntegrationCall {
+  id            String      @id @default(cuid())
+  integrationId String
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  success       Boolean
+  statusCode    Int?
+  latencyMs     Int?
+  costUsd       Float?
+  error         String?
+  createdAt     DateTime    @default(now())
+
+  @@index([integrationId, createdAt])
+}
+
+model IntegrationIncident {
+  id            String      @id @default(cuid())
+  integrationId String
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  severity      String      @default("minor")
+  startedAt     DateTime    @default(now())
+  resolvedAt    DateTime?
+}
+
+// ─────────────────── Async Pipeline Monitoring (Section 5) ───────────────────
+
+enum JobStatus {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+  RETRY
+  DEAD
+}
+
+model JobRecord {
+  id          String    @id @default(cuid())
+  taskId      String    @unique
+  taskType    String
+  queue       String    @default("default")
+  status      JobStatus @default(PENDING)
+  workerName  String?
+  durationMs  Int?
+  error       String?
+  payloadMeta Json?
+  createdAt   DateTime  @default(now())
+  finishedAt  DateTime?
+
+  @@index([taskType, createdAt])
+  @@index([status])
+}
+
+// ──────────────── Version & Deployment Tracking (Section 6) ──────────────────
+
+model Deployment {
+  id           String      @id @default(cuid())
+  environment  Environment
+  commitSha    String
+  version      String?
+  status       String      @default("active")
+  deployedById String?
+  deployedBy   User?       @relation(fields: [deployedById], references: [id])
+  rollbackOfId String?
+  deployedAt   DateTime    @default(now())
+
+  @@index([environment, deployedAt])
+}
+
+model Release {
+  id           String   @id @default(cuid())
+  version      String   @unique
+  commitSha    String
+  changelog    String?
+  deployedById String?
+  deployedBy   User?    @relation(fields: [deployedById], references: [id])
+  date         DateTime @default(now())
+}
+
+// ──────────────────── Test Logs & Test Flow (Section 7) ──────────────────────
+
+enum TestType {
+  UNIT
+  INTEGRATION
+  E2E
+  API
+  FRONTEND
+  WORKER
+}
+
+enum TestCaseStatus {
+  PASSED
+  FAILED
+  SKIPPED
+}
+
+model TestRun {
+  id         String    @id @default(cuid())
+  commitSha  String?
+  source     String    @default("manual")
+  ciUrl      String?
+  total      Int       @default(0)
+  passed     Int       @default(0)
+  failed     Int       @default(0)
+  skipped    Int       @default(0)
+  durationMs Int       @default(0)
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  cases      TestCase[]
+
+  @@index([commitSha])
+  @@index([startedAt])
+}
+
+model TestCase {
+  id             String         @id @default(cuid())
+  testRunId      String
+  testRun        TestRun        @relation(fields: [testRunId], references: [id], onDelete: Cascade)
+  name           String
+  classname      String?
+  type           TestType       @default(UNIT)
+  status         TestCaseStatus
+  durationMs     Int            @default(0)
+  failureMessage String?
+  failureTrace   String?
+
+  @@index([name])
+  @@index([testRunId])
+}
+
+model CoverageMetric {
+  id        String   @id @default(cuid())
+  commitSha String?
+  module    String
+  linesPct  Float
+  createdAt DateTime @default(now())
+
+  @@index([module, createdAt])
+}
+
+// ──────────────────── Code Benchmarks & Quality (Section 8) ──────────────────
+
+model CodeMetric {
+  id             String   @id @default(cuid())
+  commitSha      String
+  loc            Int?
+  cyclomatic     Float?
+  duplicationPct Float?
+  lintWarnings   Int?
+  typeErrors     Int?
+  buildTimeMs    Int?
+  bundleBytes    Int?
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model ApiBenchmark {
+  id        String   @id @default(cuid())
+  endpoint  String
+  p50Ms     Float
+  p95Ms     Float
+  p99Ms     Float
+  commitSha String?
+  createdAt DateTime @default(now())
+
+  @@index([endpoint, createdAt])
+}
+
+model AiCostMetric {
+  id        String   @id @default(cuid())
+  module    String
+  model     String
+  tokensIn  Int      @default(0)
+  tokensOut Int      @default(0)
+  costUsd   Float    @default(0)
+  latencyMs Int?
+  commitSha String?
+  createdAt DateTime @default(now())
+
+  @@index([module, createdAt])
+}
+
+// ─────────────────── AI Output Quality Tracking (Section 9) ──────────────────
+
+enum AiFlag {
+  NONE
+  HALLUCINATION
+  REFUSAL
+  ERROR
+}
+
+enum ReviewStatus {
+  PENDING
+  REVIEWED
+}
+
+model AiSample {
+  id           String       @id @default(cuid())
+  module       String
+  model        String
+  modelVersion String?
+  inputText    String
+  outputText   String
+  humanRating  Int?
+  notes        String?
+  costUsd      Float?
+  latencyMs    Int?
+  flag         AiFlag       @default(NONE)
+  reviewStatus ReviewStatus @default(PENDING)
+  reviewedById String?
+  reviewedBy   User?        @relation(fields: [reviewedById], references: [id])
+  createdAt    DateTime     @default(now())
+
+  @@index([module, createdAt])
+}
+
+model AiRegressionCase {
+  id             String            @id @default(cuid())
+  module         String
+  inputText      String
+  expectedNote   String?
+  baselineOutput String?
+  baselineModel  String?
+  createdAt      DateTime          @default(now())
+  runs           AiRegressionRun[]
+}
+
+model AiRegressionRun {
+  id         String           @id @default(cuid())
+  caseId     String
+  case       AiRegressionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  model      String
+  output     String
+  costUsd    Float?
+  latencyMs  Int?
+  matchScore Float?
+  createdAt  DateTime         @default(now())
+}
+
+// ───────────────────────── Report Generator (Section 11) ─────────────────────
+
+enum ReportMode {
+  INTERNAL
+  REVIEWER
+}
+
+enum ReportLang {
+  EN
+  FA
+}
+
+model Report {
+  id          String     @id @default(cuid())
+  title       String
+  mode        ReportMode @default(INTERNAL)
+  language    ReportLang @default(EN)
+  version     Int        @default(1)
+  sections    Json
+  snapshot    Json
+  createdById String?
+  createdBy   User?      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime   @default(now())
+
+  @@index([createdAt])
+}
+
+// ───────────────────────── Settings (cross-cutting) ──────────────────────────
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+// ═══════════════════════════ PHASE 2 ═══════════════════════════
+
+// ── Shared: background jobs (deploys, migrations, discovery, reconciliation) ──
+
+enum JobState {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  ROLLED_BACK
+  CANCELLED
+}
+
+model BackgroundJob {
+  id         String   @id @default(cuid())
+  kind       String   // discovery | deploy | migration | reconciliation | portscan
+  label      String
+  state      JobState @default(QUEUED)
+  progress   Int      @default(0) // 0..100
+  params     Json?
+  result     Json?
+  error      String?
+  log        String   @default("")
+  createdById String?
+  createdAt  DateTime @default(now())
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  @@index([kind, createdAt])
+  @@index([state])
+}
+
+// ── Section 15/17: Hosts & port allocations ──
+
+model Host {
+  name        String   @id
+  address     String
+  sshUser     String   @default("root")
+  sshPort     Int      @default(22)
+  sshKeyEnc   String?  // encrypted private key (crypto.ts)
+  os          String?
+  totalRamMb  Int?
+  totalCpu    Int?
+  totalDiskGb Int?
+  isLocal     Boolean  @default(false)
+  lastSeenAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  ports      PortAllocation[]
+  migrationsFrom MigrationPlan[] @relation("MigrationSource")
+  migrationsTo   MigrationPlan[] @relation("MigrationTarget")
+}
+
+model PortAllocation {
+  id          String   @id @default(cuid())
+  hostName    String
+  host        Host     @relation(fields: [hostName], references: [name], onDelete: Cascade)
+  port        Int
+  protocol    String   @default("tcp")
+  iface       String   @default("0.0.0.0") // bound interface
+  processName String?
+  serviceName String?
+  containerName String?
+  discoveredVia String  @default("docker") // docker | netstat | manual
+  isPublic    Boolean  @default(false)
+  status      String   @default("active") // active | stale
+  firstSeen   DateTime @default(now())
+  lastSeen    DateTime @default(now())
+
+  @@unique([hostName, port, protocol, iface])
+  @@index([hostName])
+}
+
+// ── Section 14: Auto-discovery proposals ──
+
+model DiscoveryProposal {
+  id          String   @id @default(cuid())
+  kind        String   // database | cache | queue | search | storage | service | integration | dependency
+  title       String
+  description String
+  proposed    Json     // proposed config to apply on accept
+  evidence    Json?    // what discovery observed
+  status      String   @default("pending") // pending | accepted | rejected | superseded
+  decidedById String?
+  decidedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([status, createdAt])
+}
+
+// ── Section 13: Alerting ──
+
+enum AlertSeverity {
+  INFO
+  WARN
+  ERROR
+  CRITICAL
+}
+
+model AlertChannel {
+  id            String   @id @default(cuid())
+  type          String   // telegram | email | webhook
+  name          String
+  configEnc     String   // encrypted JSON {botToken, chatId, url, ...}
+  enabled       Boolean  @default(true)
+  minSeverity   AlertSeverity @default(INFO)
+  createdAt     DateTime @default(now())
+
+  events        AlertDelivery[]
+}
+
+model AlertRule {
+  id            String   @id @default(cuid())
+  name          String
+  source        String   // container_logs | async | integration | billing_budget | billing_recon | tests | deploy | migration | qa_stale | access
+  containerName String?  // optional scope for container_logs
+  pattern       String?  // regex
+  threshold     Int?
+  windowSec     Int?
+  severity      AlertSeverity @default(ERROR)
+  cooldownSec   Int      @default(300)
+  enabled       Boolean  @default(true)
+  builtin       Boolean  @default(false)
+  lastFiredAt   DateTime?
+  createdAt     DateTime @default(now())
+
+  events        AlertEvent[]
+}
+
+model AlertEvent {
+  id           String   @id @default(cuid())
+  ruleId       String?
+  rule         AlertRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+  severity     AlertSeverity
+  source       String
+  title        String
+  payload      Json?
+  suppressedCount Int   @default(0)
+  ackStatus    String   @default("open") // open | acked | snoozed
+  ackById      String?
+  ackedAt      DateTime?
+  snoozeUntil  DateTime?
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  deliveries   AlertDelivery[]
+
+  @@index([ackStatus, createdAt])
+  @@index([createdAt])
+}
+
+model AlertDelivery {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       AlertEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  channelId   String
+  channel     AlertChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  status      String   @default("pending") // pending | delivered | failed | queued
+  attempts    Int      @default(0)
+  lastError   String?
+  deliveredAt DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+}
+
+// ── Section 12: Billing & cost tracking ──
+
+model BillingEvent {
+  id            String   @id @default(cuid())
+  provider      String   // openrouter | gemini | crunchbase | ...
+  model         String?
+  endpoint      String?
+  generationId  String?  @unique
+  requestId     String?
+  requestAt     DateTime @default(now())
+  tokensIn      Int      @default(0)
+  tokensOut     Int      @default(0)
+  tokensReasoning Int    @default(0)
+  tokensCached  Int      @default(0)
+  unitCost      Float?
+  totalCost     Float    @default(0)
+  currency      String   @default("USD")
+  module        String   @default("unknown")
+  userId        String?
+  projectId     String?
+  isByok        Boolean  @default(false)
+  isFreeTier    Boolean  @default(false)
+  upstreamInferenceCost Float?
+  rawMeta       Json?
+  createdAt     DateTime @default(now())
+
+  @@index([provider, requestAt])
+  @@index([module, requestAt])
+  @@index([requestAt])
+}
+
+model BillingBudget {
+  id          String   @id @default(cuid())
+  provider    String
+  period      String   // daily | weekly | monthly
+  limitAmount Float
+  currency    String   @default("USD")
+  thresholds  Int[]    @default([50, 80, 100])
+  actionOnBreach String @default("alert") // alert | pause
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@unique([provider, period])
+}
+
+model ProviderPricing {
+  id            String   @id @default(cuid())
+  provider      String
+  model         String
+  inPricePerM   Float    // per 1M input tokens
+  outPricePerM  Float    // per 1M output tokens
+  cachedInPricePerM Float?
+  effectiveFrom DateTime @default(now())
+  effectiveTo   DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([provider, model, effectiveFrom])
+}
+
+model ProviderCredential {
+  id            String   @id @default(cuid())
+  provider      String
+  credType      String   // inference | management
+  keyEnc        String   // encrypted
+  scopeNotes    String?
+  rotationDueAt DateTime?
+  createdAt     DateTime @default(now())
+
+  @@unique([provider, credType])
+}
+
+model ReconciliationRun {
+  id            String   @id @default(cuid())
+  provider      String
+  forDate       DateTime // the UTC day reconciled
+  capturedTotal Float
+  providerTotal Float
+  driftAbs      Float
+  driftPct      Float
+  flagged       Boolean  @default(false)
+  breakdown     Json?    // per-model discrepancy
+  status        String   @default("ok") // ok | drift | error
+  error         String?
+  createdAt     DateTime @default(now())
+
+  @@unique([provider, forDate])
+  @@index([createdAt])
+}
+
+// ── Section 16: Deploy runs (Deployment model from Section 6 stays the record-of-truth) ──
+
+model DeployRun {
+  id            String   @id @default(cuid())
+  environment   Environment
+  commitSha     String
+  service       String?
+  strategy      String   @default("blue_green") // blue_green | rolling | recreate
+  state         JobState @default(QUEUED)
+  jobId         String?
+  migrations    Json?    // detected migrations + reversibility
+  rolledBack    Boolean  @default(false)
+  deploymentId  String?  // links to Deployment row on success
+  triggeredById String?
+  log           String   @default("")
+  startedAt     DateTime @default(now())
+  finishedAt    DateTime?
+
+  @@index([environment, startedAt])
+}
+
+// ── Section 17: Migration plans ──
+
+model MigrationPlan {
+  id            String   @id @default(cuid())
+  sourceHostName String
+  sourceHost    Host     @relation("MigrationSource", fields: [sourceHostName], references: [name])
+  targetHostName String
+  targetHost    Host     @relation("MigrationTarget", fields: [targetHostName], references: [name])
+  service       String
+  volumes       String[] @default([])
+  strategy      String   // snapshot | replicate | dump_restore
+  expectedDowntime String?
+  status        String   @default("planned") // planned | preflight | in_progress | completed | failed | rolled_back | committed
+  jobId         String?
+  preflight     Json?
+  restorePoint  String?
+  log           String   @default("")
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdById   String?
+  createdAt     DateTime @default(now())
+
+  @@index([status, createdAt])
+}

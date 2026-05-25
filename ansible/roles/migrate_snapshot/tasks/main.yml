@@ -1,0 +1,73 @@
+---
+# Section 17 — migrate_snapshot role (REAL, parametrized via extravars).
+#
+# Strategy: cold snapshot. Stop the container on the SOURCE host, tar each
+# named docker volume, transfer the tarballs to the TARGET host, restore them
+# into fresh named volumes on the target, then start the container on the
+# target. The SOURCE container is restarted at the end so the source keeps
+# serving (parallel run) until the operator explicitly commits.
+#
+# HONESTY: snapshot LOSES writes that happen after the source stop for any
+# service with active writes. The panel REFUSES this strategy for active
+# databases (see src/lib/migration.ts chooseStrategyGuard) — never overridable
+# silently. This role assumes that guard already passed.
+#
+# Extravars expected:
+#   service          docker container name on the source
+#   volumes          list of docker named volumes to migrate
+#   source_ssh       "user@host" (or "local" for the panel host)
+#   target_ssh       "user@host" (or "local")
+#   transfer_dir     scratch dir on both ends for tarballs
+#   helper_image     tiny image used for tar in/out of volumes (e.g. alpine)
+#   start_cmd_target shell snippet to (re)create+start the container on target
+#
+# NOTE: in the panel's test/dev environment ansible may not be able to SSH to
+# two real VPSes. The Node lib (src/lib/migration.ts) performs the IDENTICAL
+# real docker/tar/ssh operations directly as a documented fallback — the
+# correctness guarantee never depends on a fake play.
+- name: "Snapshot migration of {{ service }}"
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Stop the source container (cold snapshot)
+      ansible.builtin.command:
+        cmd: "docker stop {{ service }}"
+      changed_when: true
+
+    - name: Tar each source volume into the scratch dir
+      ansible.builtin.command:
+        cmd: >-
+          docker run --rm -v {{ item }}:/v -v {{ transfer_dir }}:/out
+          {{ helper_image | default('alpine') }}
+          sh -c "cd /v && tar czf /out/{{ item }}.tar.gz ."
+      loop: "{{ volumes }}"
+      changed_when: true
+
+    - name: Transfer tarballs to the target host
+      ansible.builtin.command:
+        cmd: >-
+          scp {{ transfer_dir }}/{{ item }}.tar.gz
+          {{ target_ssh }}:{{ transfer_dir }}/{{ item }}.tar.gz
+      loop: "{{ volumes }}"
+      when: target_ssh != 'local'
+      changed_when: true
+
+    - name: Restore each volume on the target
+      ansible.builtin.command:
+        cmd: >-
+          docker run --rm -v {{ item }}:/v -v {{ transfer_dir }}:/in
+          {{ helper_image | default('alpine') }}
+          sh -c "cd /v && tar xzf /in/{{ item }}.tar.gz"
+      loop: "{{ volumes }}"
+      changed_when: true
+
+    - name: Start the migrated container on the target
+      ansible.builtin.shell:
+        cmd: "{{ start_cmd_target }}"
+      changed_when: true
+
+    - name: Restart the source container (keep source serving until commit)
+      ansible.builtin.command:
+        cmd: "docker start {{ service }}"
+      changed_when: true
+      ignore_errors: true

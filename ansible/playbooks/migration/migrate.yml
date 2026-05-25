@@ -1,0 +1,16 @@
+---
+# Section 17 — migration entry playbook. The panel passes `migration_role`
+# (migrate_snapshot | migrate_replicate | migrate_dump_restore | rollback)
+# plus the role's extravars, and a dynamically generated inventory built from
+# the Host table (localhost ansible_connection=local for the local host).
+#
+# Run by src/lib/migration.ts via ansible/run.py. If ansible cannot run in
+# this environment the Node lib performs the IDENTICAL real docker/tar/ssh
+# operations directly (documented honest fallback — never a fake success).
+- name: Section 17 container migration ({{ migration_role }})
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Include the selected migration role
+      ansible.builtin.include_role:
+        name: "{{ migration_role }}"

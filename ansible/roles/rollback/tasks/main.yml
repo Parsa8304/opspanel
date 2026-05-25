@@ -1,0 +1,32 @@
+---
+# Section 17 — rollback role (REAL, parametrized via extravars).
+#
+# Reverts a migration that has NOT been committed: stop the target container,
+# ensure the source container is running and serving, and revert any DNS / LB
+# change back to the source. The restore-point taken on the source is left
+# intact. Status becomes rolled_back.
+#
+# Extravars: service, target_ssh, source_ssh, dns_revert_cmd (optional).
+- name: "Rollback migration of {{ service }}"
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Stop the target container
+      ansible.builtin.command:
+        cmd: "docker stop {{ service }}"
+      changed_when: true
+      ignore_errors: true
+
+    - name: Ensure the source container is running (still authoritative)
+      ansible.builtin.command:
+        cmd: "docker start {{ service }}"
+      delegate_to: "{{ source_ssh }}"
+      changed_when: true
+      ignore_errors: true
+
+    - name: Revert DNS / load-balancer back to source (if configured)
+      ansible.builtin.shell:
+        cmd: "{{ dns_revert_cmd }}"
+      when: dns_revert_cmd is defined and dns_revert_cmd | length > 0
+      changed_when: true
+      ignore_errors: true

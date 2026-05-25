@@ -1,0 +1,24 @@
+---
+# Section 16 — Rolling deploy play (generic, parametrized via extravars).
+#
+# Replaces instances of {{ service }} one at a time, health-checking each new
+# replica before moving on. Same assumptions as blue_green.yml. The panel
+# updates the reverse-proxy upstream set as replicas come/go.
+#
+# Extravars: repo_path, commit_sha, service, replicas (default 1),
+#   base_port, container_port, image_tag, health_path, health_consecutive,
+#   health_interval_ms.
+- name: Rolling deploy {{ service }} @ {{ commit_sha }}
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Build new image
+      ansible.builtin.command:
+        cmd: docker compose -f {{ repo_path }}/docker-compose.yml build {{ service }}
+      changed_when: true
+
+    - name: Roll each replica
+      ansible.builtin.include_tasks: _roll_one.yml
+      loop: "{{ range(0, (replicas | default(1) | int)) | list }}"
+      loop_control:
+        loop_var: idx

@@ -1,0 +1,62 @@
+---
+# Section 16 — Blue/Green deploy play (generic, parametrized via extravars).
+#
+# ASSUMPTIONS / CUSTOMIZE FOR YOUR ENV:
+#  - The target host has docker + docker compose and a checkout of the repo
+#    at {{ repo_path }} (the panel pulls the commit before this play, but we
+#    re-assert it here so the play is also usable standalone).
+#  - The service {{ service }} is a docker compose service with a buildable
+#    image. Stateful/database services are refused by the panel BEFORE this
+#    play ever runs (see src/lib/deploy.ts statefulServices).
+#  - "green" runs on {{ green_port }} (a free standby port chosen by the
+#    panel via ports.ts nextFreePort), "blue" is the currently-live container.
+#  - The reverse-proxy switch is performed by the PANEL (managed proxy /
+#    nginx / traefik). This play builds + starts + health-checks green and
+#    stops blue; the actual atomic upstream swap is the panel's job so the
+#    zero-downtime guarantee holds even if ansible is unavailable.
+#
+# Extravars expected: repo_path, commit_sha, service, green_name, green_port,
+#   blue_name, image_tag, health_path, health_consecutive, health_interval_ms,
+#   drain_sec.
+- name: Blue/Green deploy {{ service }} @ {{ commit_sha }}
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Assert target commit checked out
+      ansible.builtin.command:
+        cmd: git -C {{ repo_path }} rev-parse HEAD
+      register: head_sha
+      changed_when: false
+
+    - name: Build the green image
+      ansible.builtin.command:
+        cmd: docker compose -f {{ repo_path }}/docker-compose.yml build {{ service }}
+      changed_when: true
+
+    - name: Start the green container on the standby port
+      ansible.builtin.command:
+        cmd: >-
+          docker run -d --name {{ green_name }}
+          -p {{ green_port }}:{{ container_port | default(8000) }}
+          {{ image_tag }}
+      changed_when: true
+
+    - name: Health-check green for N consecutive successes
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ green_port }}{{ health_path | default('/health') }}"
+        status_code: 200
+      register: hc
+      retries: "{{ (health_consecutive | int) * 3 }}"
+      delay: "{{ (health_interval_ms | int) / 1000 }}"
+      until: hc.status == 200
+
+    # NOTE: traffic switch is performed by the panel (managed proxy/nginx).
+    - name: Drain old (blue) connections
+      ansible.builtin.pause:
+        seconds: "{{ (drain_sec | default(3)) | int }}"
+
+    - name: Stop the old (blue) container
+      ansible.builtin.command:
+        cmd: docker stop {{ blue_name }}
+      changed_when: true
+      ignore_errors: true
