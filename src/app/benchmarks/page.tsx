@@ -26,6 +26,7 @@ import {
   ArrowDown,
   Plus,
   Trash2,
+  Activity,
 } from "lucide-react";
 
 type Lang = "en" | "fa";
@@ -94,7 +95,7 @@ function StatTile({
 
 export default function Page() {
   const { lang } = useUI();
-  const [tab, setTab] = useState<"code" | "api" | "ai" | "config">("code");
+  const [tab, setTab] = useState<"code" | "api" | "scrapers" | "ai" | "config">("code");
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [aiDays, setAiDays] = useState(30);
@@ -109,6 +110,10 @@ export default function Page() {
   );
   const { data: apiRes, mutate: mutApi } = useSWR(
     "/api/benchmarks/api",
+    fetcher
+  );
+  const { data: scraperRes, mutate: mutScrapers } = useSWR(
+    "/api/benchmarks/scrapers",
     fetcher
   );
   const { data: aiRes } = useSWR(
@@ -193,10 +198,11 @@ export default function Page() {
   }
 
   const tabs: { key: typeof tab; label: string; icon: any }[] = [
-    { key: "code", label: t("benchTabCode", lang), icon: Gauge },
-    { key: "api", label: t("benchTabApi", lang), icon: Server },
-    { key: "ai", label: t("benchTabAi", lang), icon: DollarSign },
-    { key: "config", label: t("benchTabConfig", lang), icon: SettingsIcon },
+    { key: "code",     label: t("benchTabCode", lang),     icon: Gauge },
+    { key: "api",      label: t("benchTabApi", lang),      icon: Server },
+    { key: "scrapers", label: "Scraper latency",            icon: Activity },
+    { key: "ai",       label: t("benchTabAi", lang),       icon: DollarSign },
+    { key: "config",   label: t("benchTabConfig", lang),   icon: SettingsIcon },
   ];
 
   return (
@@ -432,7 +438,17 @@ export default function Page() {
           )}
 
           {apiRows.length === 0 ? (
-            <EmptyState msg={t("benchNoApi", lang)} />
+            <div className="rounded-lg border border-dashed border-zinc-700 p-8 text-center text-sm text-zinc-500 space-y-2">
+              <p>No API benchmark runs yet. Click &ldquo;Run API benchmark&rdquo; to measure panel endpoint latency.</p>
+              {cfg?.endpoints?.length > 0 && (
+                <p className="text-xs">
+                  Configured: {cfg.endpoints.map((e: any) => e.name).join(", ")}
+                </p>
+              )}
+              {(!cfg?.endpoints || cfg.endpoints.length === 0) && (
+                <p className="text-xs text-amber-500">No endpoints configured. Go to Configuration tab to add endpoints.</p>
+              )}
+            </div>
           ) : (
             apiEndpoints.map((ep) => {
               const rows = (apiByEndpoint.get(ep) || []).map((r) => ({
@@ -516,6 +532,20 @@ export default function Page() {
             })
           )}
         </div>
+      )}
+
+      {/* SCRAPER LATENCY */}
+      {tab === "scrapers" && (
+        <ScraperBenchTab
+          lang={lang}
+          isEng={isEng}
+          scraperRes={scraperRes}
+          mutScrapers={mutScrapers}
+          busy={busy}
+          setBusy={setBusy}
+          setMsg={setMsg}
+          post={post}
+        />
       )}
 
       {/* AI COST */}
@@ -664,6 +694,168 @@ export default function Page() {
               }}
             />
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ScraperBenchTab({
+  lang, isEng, scraperRes, mutScrapers, busy, setBusy, setMsg, post,
+}: {
+  lang: Lang; isEng: boolean; scraperRes: any; mutScrapers: () => void;
+  busy: string | null; setBusy: (s: string | null) => void;
+  setMsg: (s: string | null) => void;
+  post: (url: string, body?: any) => Promise<any>;
+}) {
+  const scraperRows: any[] = scraperRes?.rows || [];
+  const scraperEndpoints: string[] = scraperRes?.endpoints || [];
+
+  // Group rows by endpoint
+  const byEndpoint = new Map<string, any[]>();
+  for (const r of scraperRows) {
+    const list = byEndpoint.get(r.endpoint) || [];
+    list.push(r);
+    byEndpoint.set(r.endpoint, list);
+  }
+
+  // Group endpoints by service (prefix before "/")
+  const byService = new Map<string, string[]>();
+  for (const ep of scraperEndpoints) {
+    const [svc] = ep.split("/");
+    const list = byService.get(svc) || [];
+    list.push(ep);
+    byService.set(svc, list);
+  }
+
+  const latencyColor = (ms: number) => {
+    if (ms === 0) return "text-zinc-500";
+    if (ms < 500) return "text-emerald-500";
+    if (ms < 2000) return "text-amber-500";
+    return "text-red-500";
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      {isEng && (
+        <div className="flex items-center gap-3">
+          <button
+            disabled={!!busy}
+            onClick={async () => {
+              await post("/api/benchmarks/scrapers", { n: 3 });
+              mutScrapers();
+            }}
+            className="inline-flex items-center gap-2 rounded bg-[#09637E] text-white px-3 py-1.5 text-sm disabled:opacity-50"
+          >
+            <Play size={14} />
+            {busy === "/api/benchmarks/scrapers" ? "Running…" : "Run scraper benchmark (3×)"}
+          </button>
+          <span className="text-xs text-zinc-500">
+            Probes health + real step endpoints on each scraper via host network.
+            Takes ~30–60 s.
+          </span>
+        </div>
+      )}
+
+      {scraperRows.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-zinc-700 p-8 text-center text-sm text-zinc-500">
+          No scraper benchmark runs yet. Click &ldquo;Run scraper benchmark&rdquo; to measure latency.
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {Array.from(byService.entries()).map(([svc, eps]) => {
+            const latest = eps.reduce<Record<string, any>>((acc, ep) => {
+              const rows = byEndpoint.get(ep) || [];
+              acc[ep] = rows[rows.length - 1] ?? null;
+              return acc;
+            }, {});
+            return (
+              <div
+                key={svc}
+                className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden"
+              >
+                <div className="border-b border-zinc-200 dark:border-zinc-800 px-4 py-2.5 flex items-center gap-2">
+                  <span className="font-semibold text-sm capitalize">{svc}</span>
+                  <span className="text-xs text-zinc-500">{eps.length} probe{eps.length !== 1 ? "s" : ""}</span>
+                </div>
+                <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {eps.map((ep) => {
+                    const probe = ep.split("/")[1] ?? ep;
+                    const last = latest[ep];
+                    const histRows = (byEndpoint.get(ep) || []).slice(-10);
+                    const chartData = histRows.map((r: any) => ({
+                      label: fmtDate(r.createdAt, lang),
+                      p50Ms: r.p50Ms,
+                      p95Ms: r.p95Ms,
+                      p99Ms: r.p99Ms,
+                    }));
+                    return (
+                      <div key={ep} className="px-4 py-3">
+                        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                          <span className="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 rounded px-1.5 py-0.5">{probe}</span>
+                          {last ? (
+                            <div className="flex gap-4 text-xs tabular-nums">
+                              <span>
+                                p50 <span className={`font-semibold ${latencyColor(last.p50Ms)}`}>{last.p50Ms} ms</span>
+                              </span>
+                              <span>
+                                p95 <span className={`font-semibold ${latencyColor(last.p95Ms)}`}>{last.p95Ms} ms</span>
+                              </span>
+                              <span>
+                                p99 <span className={`font-semibold ${latencyColor(last.p99Ms)}`}>{last.p99Ms} ms</span>
+                              </span>
+                              <span className="text-zinc-400">{fmtDate(last.createdAt, lang)}</span>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-zinc-500">no data</span>
+                          )}
+                        </div>
+                        {chartData.length > 1 && (
+                          <div className="h-36">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+                                <XAxis dataKey="label" tick={{ fontSize: 9 }} />
+                                <YAxis tick={{ fontSize: 9 }} unit=" ms" />
+                                <Tooltip
+                                  contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", fontSize: 11 }}
+                                />
+                                <Line type="monotone" dataKey="p50Ms" name="p50" stroke="#10b981" dot={false} strokeWidth={1.5} />
+                                <Line type="monotone" dataKey="p95Ms" name="p95" stroke="#f59e0b" dot={false} strokeWidth={1.5} />
+                                <Line type="monotone" dataKey="p99Ms" name="p99" stroke="#ef4444" dot={false} strokeWidth={1.5} />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        )}
+                        {histRows.length > 0 && (
+                          <table className="w-full text-xs mt-2">
+                            <thead className="text-zinc-500">
+                              <tr>
+                                <th className="text-start py-1">When</th>
+                                <th className="text-end py-1">p50</th>
+                                <th className="text-end py-1">p95</th>
+                                <th className="text-end py-1">p99</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {[...histRows].reverse().map((r: any) => (
+                                <tr key={r.id} className="border-t border-zinc-100 dark:border-zinc-800">
+                                  <td className="py-1 text-zinc-500">{fmtDate(r.createdAt, lang)}</td>
+                                  <td className={`py-1 text-end tabular-nums ${latencyColor(r.p50Ms)}`}>{r.p50Ms} ms</td>
+                                  <td className={`py-1 text-end tabular-nums ${latencyColor(r.p95Ms)}`}>{r.p95Ms} ms</td>
+                                  <td className={`py-1 text-end tabular-nums ${latencyColor(r.p99Ms)}`}>{r.p99Ms} ms</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

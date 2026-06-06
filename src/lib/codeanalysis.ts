@@ -543,5 +543,11 @@ export const BENCHMARKS_SETTING_KEY = "benchmarks";
 export const DEFAULT_BENCHMARKS_CONFIG: BenchmarksConfig = {
   targetDir: "/home/parsa/panel",
   buildCmd: "npm run build",
-  endpoints: [],
+  endpoints: [
+    { name: "Overview API",        url: "http://localhost:3000/api/overview" },
+    { name: "Containers API",      url: "http://localhost:3000/api/containers" },
+    { name: "Scraper health",      url: "http://localhost:3000/api/scrapers/health" },
+    { name: "Async overview",      url: "http://localhost:3000/api/async/overview" },
+    { name: "Server stats",        url: "http://localhost:3000/api/server" },
+  ],
 };
