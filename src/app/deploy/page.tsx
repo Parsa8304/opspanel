@@ -10,7 +10,7 @@ import { CheckCircle2, AlertTriangle, Clock, Activity, XCircle } from "lucide-re
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 type Role = "ADMIN" | "ENGINEER" | "REVIEWER" | "READONLY";
-const ENVS = ["DEV", "STAGING", "DEMO", "OPERATIONAL", "PROD"] as const;
+const ENVS = ["DEV", "PROD"] as const;
 const STRATEGIES = ["blue_green", "rolling", "recreate"] as const;
 
 interface Commit {

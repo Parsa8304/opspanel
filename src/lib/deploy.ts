@@ -23,7 +23,7 @@ import { startHealthWatch, DEFAULT_HEALTH_WATCH } from "./healthwatch";
  */
 
 export type Strategy = "blue_green" | "rolling" | "recreate";
-export type Env = "DEV" | "STAGING" | "DEMO" | "OPERATIONAL" | "PROD";
+export type Env = "DEV" | "PROD";
 
 export interface DeployConfig {
   proxyMode: "managed" | "nginx" | "traefik";
@@ -436,7 +436,7 @@ export interface RunDeployOpts {
   _forceHealthFail?: boolean;
 }
 
-const ENV_REQUIRES_ADMIN: Env[] = ["PROD", "OPERATIONAL"];
+const ENV_REQUIRES_ADMIN: Env[] = ["PROD"];
 
 export function envRequiresAdmin(env: Env): boolean {
   return ENV_REQUIRES_ADMIN.includes(env);

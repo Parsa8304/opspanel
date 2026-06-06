@@ -19,7 +19,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const ENVS = ["DEV", "STAGING", "DEMO", "OPERATIONAL", "PROD"] as const;
+const ENVS = ["DEV", "PROD"] as const;
 const PROVIDERS = ["local", "github", "gitlab", "gitea"] as const;
 
 type Lang = "en" | "fa";
@@ -272,7 +272,7 @@ export default function Page() {
   const [rel, setRel] = useState({ version: "", commitSha: "", changelog: "" });
 
   // Release comparison state
-  const [cmpFrom, setCmpFrom] = useState<string>("STAGING");
+  const [cmpFrom, setCmpFrom] = useState<string>("DEV");
   const [cmpTo, setCmpTo] = useState<string>("PROD");
   const [cmp, setCmp] = useState<CompareResult | null>(null);
   const [cmpLoading, setCmpLoading] = useState(false);
