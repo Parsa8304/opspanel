@@ -8,7 +8,7 @@ export async function hostExec(cmd: string, timeout = 15000): Promise<{ stdout: 
   return execAsync(`nsenter -t 1 -m -u -i -n -p -- sh -c ${JSON.stringify(cmd)}`, { timeout });
 }
 
-// HTTP probe using the host's curl (nsenter -m -n uses host mount+network ns so /usr/bin/curl resolves on host)
+// HTTP probe using the host's curl (nsenter -m -n enters host mount+network ns)
 export async function hostFetch(
   method: "GET" | "POST",
   url: string,
@@ -17,17 +17,17 @@ export async function hostFetch(
 ): Promise<{ ok: boolean; statusCode: number; body: string; latencyMs: number }> {
   const t0 = Date.now();
   const bodyArgs = body
-    ? `-H 'Content-Type: application/json' -d ${JSON.stringify(JSON.stringify(body))}`
+    ? `-H 'Content-Type: application/json' -d '${JSON.stringify(body).replace(/'/g, "'\\''")}'`
     : "";
-  const cmd = `nsenter -t 1 -m -n -- /usr/bin/curl -s -o /tmp/_hf_body -w '%{http_code}' --max-time ${timeoutSec} -X ${method} ${bodyArgs} ${JSON.stringify(url)} && cat /tmp/_hf_body`;
+  // Run everything inside a single sh -c so curl and cat share the same host namespace /tmp
+  const inner = `curl -s -o /tmp/_hf_body -w '%{http_code}' --max-time ${timeoutSec} -X ${method} ${bodyArgs} '${url}' && cat /tmp/_hf_body`;
+  const cmd = `nsenter -t 1 -m -n -- sh -c ${JSON.stringify(inner)}`;
   try {
     const { stdout } = await execAsync(cmd, { timeout: (timeoutSec + 3) * 1000 });
-    // stdout = "<status_code><body>" because curl -w appends to stdout before -o redirects body
-    // Actually: -o writes body to file, -w prints code to stdout; second cmd (cat) appends body
-    const lines = stdout.split("\n");
-    const statusCode = parseInt(lines[0].trim(), 10) || 0;
-    const body = lines.slice(1).join("\n").trim();
-    return { ok: statusCode >= 200 && statusCode < 400, statusCode, body, latencyMs: Date.now() - t0 };
+    // stdout = "<status_code><body>" — status code is printed by -w, body by cat
+    const statusCode = parseInt(stdout.slice(0, 3), 10) || 0;
+    const respBody = stdout.slice(3).trim();
+    return { ok: statusCode >= 200 && statusCode < 400, statusCode, body: respBody, latencyMs: Date.now() - t0 };
   } catch (e: any) {
     return { ok: false, statusCode: 0, body: String(e?.stderr || e?.message || e).slice(0, 200), latencyMs: Date.now() - t0 };
   }
