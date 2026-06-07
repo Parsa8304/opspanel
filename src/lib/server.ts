@@ -1,4 +1,4 @@
-import { exec } from "child_process";
+import { exec, spawn } from "child_process";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);
@@ -6,6 +6,51 @@ const execAsync = promisify(exec);
 // Run a command in host namespaces via nsenter (requires pid:host + privileged)
 export async function hostExec(cmd: string, timeout = 15000): Promise<{ stdout: string; stderr: string }> {
   return execAsync(`nsenter -t 1 -m -u -i -n -p -- sh -c ${JSON.stringify(cmd)}`, { timeout });
+}
+
+/**
+ * Spawn a command in host namespaces and stream stdout+stderr line by line.
+ * onLine is called for each line as it arrives (unbuffered).
+ * Resolves when the process exits 0, rejects on non-zero exit.
+ */
+export function hostSpawn(
+  cmd: string,
+  onLine: (line: string) => void,
+  timeoutMs = 600000
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn("nsenter", ["-t", "1", "-m", "-u", "-i", "-n", "-p", "--", "sh", "-c", cmd], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    let buf = "";
+    const flush = (chunk: string) => {
+      buf += chunk;
+      const lines = buf.split("\n");
+      buf = lines.pop() ?? "";
+      for (const l of lines) onLine(l);
+    };
+
+    child.stdout.on("data", (d: Buffer) => flush(d.toString()));
+    child.stderr.on("data", (d: Buffer) => flush(d.toString()));
+
+    const timer = setTimeout(() => {
+      child.kill("SIGTERM");
+      reject(new Error(`Command timed out after ${timeoutMs / 1000}s`));
+    }, timeoutMs);
+
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      if (buf) onLine(buf); // flush remaining partial line
+      if (code === 0) resolve();
+      else reject(new Error(`Command exited with code ${code}`));
+    });
+
+    child.on("error", (e) => {
+      clearTimeout(timer);
+      reject(e);
+    });
+  });
 }
 
 // HTTP probe using the host's curl (nsenter -m -n enters host mount+network ns)
