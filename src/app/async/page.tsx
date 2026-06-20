@@ -589,7 +589,7 @@ function DlqPanel({ lang, canEdit, queues }: { lang: Lang; canEdit: boolean; que
                     {canEdit && (
                       <>
                         <button disabled={busy} onClick={() => act(e, "retry")}
-                          className="text-xs rounded bg-[#09637E] text-white px-2 py-0.5 disabled:opacity-50">
+                          className="text-xs rounded bg-indigo-600 text-white px-2 py-0.5 disabled:opacity-50">
                           {t("retryAction", lang)}
                         </button>
                         <button disabled={busy} onClick={() => act(e, "discard")}
@@ -691,7 +691,7 @@ function ConfigEditor({ lang, canEdit, onSaved }: { lang: Lang; canEdit: boolean
                 )}
               </div>
               {canEdit && (
-                <button onClick={save} className="rounded bg-[#09637E] text-white text-sm px-3 py-1.5">
+                <button onClick={save} className="rounded bg-indigo-600 text-white text-sm px-3 py-1.5">
                   {saved ? t("savedCfg", lang) : t("saveCfg", lang)}
                 </button>
               )}

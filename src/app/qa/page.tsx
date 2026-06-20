@@ -138,7 +138,7 @@ export default function Page() {
             onClick={() => setTab(tb.key)}
             className={`rounded px-3 py-1.5 text-sm border ${
               tab === tb.key
-                ? "bg-[#09637E] text-white border-[#09637E]"
+                ? "bg-indigo-600 text-white border-indigo-500"
                 : "border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
             }`}
           >
@@ -529,7 +529,7 @@ function Coverage({ lang, canEdit }: { lang: Lang; canEdit: boolean }) {
             onClick={() => setView(v)}
             className={`rounded px-3 py-1 text-xs border ${
               view === v
-                ? "bg-[#09637E] text-white border-[#09637E]"
+                ? "bg-indigo-600 text-white border-indigo-500"
                 : "border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
             }`}
           >

@@ -4,42 +4,44 @@
 
 /* ─── Light mode (default) ────────────────────────── */
 :root {
-  --bg-main:    #EBF4F6;
+  --bg-main:    #f5f7ff;
   --bg-panel:   #ffffff;
-  --bg-card:    #f3fafb;
-  --border:     #cfe2e7;
+  --bg-card:    #f0f3ff;
+  --border:     #dbe1f5;
 
-  --primary:    #09637E;
-  --accent:     #7AB2B2;
+  --primary:    #4f46e5;   /* indigo-600 */
+  --accent:     #06b6d4;   /* cyan-500   */
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
 
-  --text-main:      #0f2730;
-  --text-secondary: #335059;
-  --text-muted:     #5b7780;
+  --text-main:      #1a1d2e;
+  --text-secondary: #3d4566;
+  --text-muted:     #6b7394;
 
   --danger:  #ef4444;
   --warning: #f59e0b;
   --success: #10b981;
 
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-card: 0 1px 3px rgba(79,70,229,0.08), 0 1px 2px rgba(0,0,0,0.05);
 
   font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 /* ─── Dark mode ───────────────────────────────────── */
 .dark {
-  --bg-main:    #061015;
-  --bg-panel:   #0d1a20;
-  --bg-card:    #11222a;
-  --border:     #1f3942;
+  --bg-main:    #0a0e1a;
+  --bg-panel:   #0f1424;
+  --bg-card:    #151b30;
+  --border:     #232a45;
 
-  --primary:    #088395;
-  --accent:     #7AB2B2;
+  --primary:    #818cf8;   /* indigo-400 */
+  --accent:     #22d3ee;   /* cyan-400   */
+  --accent-gradient: linear-gradient(135deg, #818cf8 0%, #22d3ee 100%);
 
-  --text-main:      #ebf4f6;
-  --text-secondary: #aebfc4;
-  --text-muted:     #708890;
+  --text-main:      #eef1ff;
+  --text-secondary: #b4bce0;
+  --text-muted:     #7a82a8;
 
-  --shadow-card: 0 4px 24px rgba(0,0,0,0.35);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(129,140,248,0.06);
 }
 
 html[dir="rtl"] {
@@ -71,24 +73,25 @@ html, body { padding: 0; margin: 0; }
   text-overflow: ellipsis;
 }
 .sidebar-item:hover {
-  background: rgba(122, 178, 178, 0.10);
-  color: #ebf4f6;
+  background: rgba(99, 102, 241, 0.12);
+  color: #eef1ff;
 }
 .sidebar-item:hover .sidebar-icon {
-  color: #7AB2B2;
+  color: #22d3ee;
 }
 .sidebar-item.active {
-  background: #09637E;
-  border-left: 3px solid #7AB2B2;
+  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  border-left: 3px solid #22d3ee;
   padding-left: 9px;
   color: #ffffff;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.35);
 }
 .sidebar-item.active .sidebar-icon {
-  color: #7AB2B2;
+  color: #ffffff;
 }
 .sidebar-icon {
   flex-shrink: 0;
-  color: #4a5568;
+  color: #5b6486;
   transition: color 0.15s ease;
 }
 

@@ -195,7 +195,7 @@ function Card({
             onClick={toggleEnabled}
             className={`text-[11px] rounded px-2 py-1 border ${
               i.enabled
-                ? "border-[#09637E] text-white bg-[#09637E]"
+                ? "border-indigo-500 text-white bg-indigo-600"
                 : "border-zinc-300 dark:border-zinc-700 text-zinc-500"
             } disabled:opacity-50`}
           >
@@ -231,7 +231,7 @@ function Card({
             onClick={() => setWin(w)}
             className={`text-[11px] rounded px-2 py-0.5 ${
               win === w
-                ? "bg-[#09637E] text-white"
+                ? "bg-indigo-600 text-white"
                 : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
             }`}
           >
@@ -271,7 +271,7 @@ function Card({
         {i.quota.monthlyQuota != null && (
           <div className="h-1.5 rounded bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
             <div
-              className="h-full bg-[#09637E]"
+              className="h-full bg-indigo-600"
               style={{
                 width: `${Math.min(i.quota.quotaUsedPct ?? 0, 100)}%`,
               }}
@@ -309,7 +309,7 @@ function Card({
         <button
           disabled={!canEdit || testing || !i.enabled || !i.configured}
           onClick={runTest}
-          className="text-xs rounded px-3 py-1.5 bg-[#09637E] text-white disabled:opacity-50"
+          className="text-xs rounded px-3 py-1.5 bg-indigo-600 text-white disabled:opacity-50"
         >
           {testing ? t("testing", lang) : t("testConnection", lang)}
         </button>
@@ -522,7 +522,7 @@ function Detail({
                 </select>
                 <button
                   onClick={addIncident}
-                  className="text-xs rounded px-3 py-1 bg-[#09637E] text-white"
+                  className="text-xs rounded px-3 py-1 bg-indigo-600 text-white"
                 >
                   {t("add", lang)}
                 </button>
@@ -675,7 +675,7 @@ function ConfigDrawer({
               <button
                 onClick={save}
                 disabled={saving}
-                className="w-full rounded bg-[#09637E] text-white py-2 disabled:opacity-50"
+                className="w-full rounded bg-indigo-600 text-white py-2 disabled:opacity-50"
               >
                 {saving ? t("loading", lang) : t("save", lang)}
               </button>

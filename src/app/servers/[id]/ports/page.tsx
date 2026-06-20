@@ -174,7 +174,7 @@ export default function ServerPortsPage() {
           <button
             onClick={runScan}
             disabled={running}
-            className="rounded bg-[#09637E] text-white text-sm px-4 py-2 hover:bg-[#088395] disabled:opacity-50"
+            className="rounded bg-indigo-600 text-white text-sm px-4 py-2 hover:bg-indigo-500 disabled:opacity-50"
           >
             {running ? "Scanning…" : "Scan ports"}
           </button>
@@ -394,7 +394,7 @@ export default function ServerPortsPage() {
             />
             <button
               onClick={findFree}
-              className="rounded bg-[#09637E] text-white px-3 py-1.5 hover:bg-[#088395]"
+              className="rounded bg-indigo-600 text-white px-3 py-1.5 hover:bg-indigo-500"
             >
               Find
             </button>
@@ -430,7 +430,7 @@ export default function ServerPortsPage() {
             />
             <button
               onClick={addManual}
-              className="rounded bg-[#09637E] text-white px-3 py-1.5 hover:bg-[#088395]"
+              className="rounded bg-indigo-600 text-white px-3 py-1.5 hover:bg-indigo-500"
             >
               Add
             </button>

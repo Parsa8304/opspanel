@@ -127,7 +127,7 @@ export default function Page() {
             onClick={() => setTab(k)}
             className={`px-3 py-2 text-sm border-b-2 -mb-px ${
               tab === k
-                ? "border-[#7AB2B2] text-white"
+                ? "border-cyan-400 text-white"
                 : "border-transparent text-zinc-500"
             }`}
           >

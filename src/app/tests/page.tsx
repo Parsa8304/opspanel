@@ -337,7 +337,7 @@ export default function Page() {
           <div className="flex items-end">
             <button
               onClick={() => setApplied({ ...filters })}
-              className="rounded bg-[#09637E] px-3 py-1.5 text-white hover:bg-[#088395]"
+              className="rounded bg-indigo-600 px-3 py-1.5 text-white hover:bg-indigo-500"
             >
               {t("applyFilters", L)}
             </button>
@@ -682,7 +682,7 @@ export default function Page() {
           />
           <button
             onClick={recordCoverage}
-            className="rounded bg-[#09637E] px-3 py-1 text-white hover:bg-[#088395]"
+            className="rounded bg-indigo-600 px-3 py-1 text-white hover:bg-indigo-500"
           >
             {t("recordCoverage", L)}
           </button>
@@ -767,7 +767,7 @@ export default function Page() {
         <div className="mt-3 flex flex-wrap gap-3">
           <button
             onClick={saveCi}
-            className="rounded bg-[#09637E] px-3 py-1.5 text-sm text-white hover:bg-[#088395]"
+            className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500"
           >
             {t("saveCiConfig", L)}
           </button>
@@ -802,7 +802,7 @@ export default function Page() {
         <button
           onClick={doIngest}
           disabled={!xml.trim()}
-          className="mt-3 rounded bg-[#09637E] px-3 py-1.5 text-sm text-white hover:bg-[#088395] disabled:opacity-50"
+          className="mt-3 rounded bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500 disabled:opacity-50"
         >
           {t("ingest", L)}
         </button>

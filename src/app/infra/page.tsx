@@ -181,7 +181,7 @@ function ConfigPanel({ config, onSaved }: { config: InfraDeployConfig; onSaved: 
             <button
               onClick={save}
               disabled={saving}
-              className="flex items-center gap-1.5 bg-[#09637E] hover:bg-[#088395] text-white rounded px-3 py-1.5 text-xs disabled:opacity-50"
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded px-3 py-1.5 text-xs disabled:opacity-50"
             >
               <Save size={12} /> {saving ? "Saving…" : "Save steps"}
             </button>
@@ -387,7 +387,7 @@ export default function InfraPage() {
             <button
               disabled={busy || !!runningJob}
               onClick={triggerDeploy}
-              className="flex items-center gap-2 bg-[#09637E] hover:bg-[#088395] text-white rounded px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {dryRun ? <FlaskConical size={14} /> : <CloudUpload size={14} />}
               {dryRun ? "Run dry-run" : "Deploy now"}

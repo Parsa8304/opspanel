@@ -143,7 +143,7 @@ export default function Page() {
                     onClick={() => setMode(m)}
                     className={`flex-1 rounded border px-3 py-1.5 text-sm ${
                       mode === m
-                        ? "bg-[#09637E] text-white border-[#09637E]"
+                        ? "bg-indigo-600 text-white border-indigo-500"
                         : "border-zinc-300 dark:border-zinc-700"
                     }`}
                   >
@@ -173,7 +173,7 @@ export default function Page() {
                     onClick={() => setRlang(l)}
                     className={`flex-1 rounded border px-3 py-1.5 text-sm ${
                       rlang === l
-                        ? "bg-[#09637E] text-white border-[#09637E]"
+                        ? "bg-indigo-600 text-white border-indigo-500"
                         : "border-zinc-300 dark:border-zinc-700"
                     }`}
                   >
@@ -215,7 +215,7 @@ export default function Page() {
               <button
                 onClick={doGenerate}
                 disabled={busy}
-                className="rounded bg-[#09637E] text-white px-3 py-1.5 text-sm disabled:opacity-50"
+                className="rounded bg-indigo-600 text-white px-3 py-1.5 text-sm disabled:opacity-50"
               >
                 {busy ? t("repGenerating", lang) : t("repGenerate", lang)}
               </button>

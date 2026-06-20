@@ -16,7 +16,7 @@ const CARD_HEAD =
 const INPUT =
   "w-full bg-transparent border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1.5 text-sm";
 const BTN =
-  "px-4 py-2 text-sm rounded bg-[#09637E] hover:bg-[#088395] text-white disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2";
+  "px-4 py-2 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2";
 const LABEL = "text-xs text-zinc-500 mb-1 block";
 
 /* ─── Security status ───────────────────────────────────────────────────── */
@@ -111,7 +111,7 @@ function AppearanceSection() {
   const pill = (active: boolean) =>
     `px-3 py-1.5 text-sm rounded border inline-flex items-center gap-2 ${
       active
-        ? "border-[#09637E] bg-[#09637E]/10 text-[#0b86a8]"
+        ? "border-indigo-500 bg-indigo-600/10 text-cyan-400"
         : "border-zinc-300 dark:border-zinc-700 text-zinc-500"
     }`;
   return (

@@ -47,12 +47,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0e1a] text-zinc-100">
+      {/* Ambient gradient glow */}
+      <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-indigo-600/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl" />
       <form
         onSubmit={submit}
-        className="w-80 space-y-4 rounded-xl border border-zinc-800 bg-zinc-900 p-6"
+        className="relative w-80 space-y-4 rounded-2xl border border-white/10 bg-white/5 p-7 shadow-2xl backdrop-blur-xl"
       >
-        <h1 className="text-lg font-semibold">{t("appName", lang)}</h1>
+        <div className="mb-2">
+          <div className="mb-3 h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/30" />
+          <h1 className="bg-gradient-to-r from-indigo-300 to-cyan-300 bg-clip-text text-2xl font-bold text-transparent">
+            {t("appName", lang)}
+          </h1>
+        </div>
 
         {step === "credentials" ? (
           <>
@@ -98,7 +106,7 @@ export default function LoginPage() {
         {err && <p className="text-sm text-red-400">{err}</p>}
         <button
           disabled={busy || (step === "totp" && totpCode.length !== 6)}
-          className="w-full rounded bg-[#09637E] py-2 text-sm font-medium disabled:opacity-50"
+          className="w-full rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-500 py-2.5 text-sm font-semibold shadow-lg shadow-indigo-500/25 transition hover:from-indigo-400 hover:to-cyan-400 disabled:opacity-50"
         >
           {step === "totp" ? "Verify" : t("signIn", lang)}
         </button>

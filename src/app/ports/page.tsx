@@ -327,7 +327,7 @@ export default function Page() {
                     <td className="p-2 font-medium">
                       {h.name}{" "}
                       {h.isLocal && (
-                        <span className="rounded bg-[#09637E] text-white px-1.5 py-0.5 text-[10px]">
+                        <span className="rounded bg-indigo-600 text-white px-1.5 py-0.5 text-[10px]">
                           {t("potLocalBadge", lang)}
                         </span>
                       )}
@@ -414,7 +414,7 @@ export default function Page() {
               />
               <button
                 onClick={addHost}
-                className="rounded bg-[#09637E] text-white text-xs px-3 py-1.5 hover:bg-[#088395]"
+                className="rounded bg-indigo-600 text-white text-xs px-3 py-1.5 hover:bg-indigo-500"
               >
                 {t("potAddHost", lang)}
               </button>
@@ -428,7 +428,7 @@ export default function Page() {
             <button
               onClick={runScan}
               disabled={running}
-              className="rounded bg-[#09637E] text-white text-sm px-4 py-2 hover:bg-[#088395] disabled:opacity-50"
+              className="rounded bg-indigo-600 text-white text-sm px-4 py-2 hover:bg-indigo-500 disabled:opacity-50"
             >
               {running ? t("potScanning", lang) : t("potScan", lang)}
             </button>
@@ -695,7 +695,7 @@ export default function Page() {
             />
             <button
               onClick={findFree}
-              className="rounded bg-[#09637E] text-white px-3 py-1.5 hover:bg-[#088395]"
+              className="rounded bg-indigo-600 text-white px-3 py-1.5 hover:bg-indigo-500"
             >
               {t("potNextFreeFind", lang)}
             </button>
@@ -754,7 +754,7 @@ export default function Page() {
                 />
                 <button
                   onClick={addManual}
-                  className="rounded bg-[#09637E] text-white px-3 py-1.5 hover:bg-[#088395]"
+                  className="rounded bg-indigo-600 text-white px-3 py-1.5 hover:bg-indigo-500"
                 >
                   {t("potManualAdd", lang)}
                 </button>
@@ -786,7 +786,7 @@ export default function Page() {
               </div>
               <button
                 onClick={saveCfg}
-                className="mt-3 rounded bg-[#09637E] text-white text-sm px-4 py-2 hover:bg-[#088395]"
+                className="mt-3 rounded bg-indigo-600 text-white text-sm px-4 py-2 hover:bg-indigo-500"
               >
                 {savedFlag ? t("potSaved", lang) : t("potSave", lang)}
               </button>

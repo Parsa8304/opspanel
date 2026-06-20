@@ -160,7 +160,7 @@ function LogDrawer({ id, name, onClose }: { id: string; name: string; onClose: (
           <span className="font-medium text-sm flex-1 truncate min-w-0">{t("liveLogs", lang)} · {name}</span>
           {(["ALL", "ERROR", "WARN", "INFO"] as const).map((l) => (
             <button key={l} onClick={() => setLevel(l)}
-              className={`rounded border px-2 py-1 text-[10px] ${level === l ? "border-[#09637E] bg-[#09637E]/30 text-white" : "border-zinc-700 text-zinc-500"}`}>
+              className={`rounded border px-2 py-1 text-[10px] ${level === l ? "border-indigo-500 bg-indigo-600/30 text-white" : "border-zinc-700 text-zinc-500"}`}>
               {l}
             </button>
           ))}
@@ -227,7 +227,7 @@ function ExecPanel({ id }: { id: string }) {
         <input value={cmd} onChange={(e) => setCmd(e.target.value)} onKeyDown={(e) => e.key === "Enter" && run()}
           placeholder={t("execHint", lang)}
           className="flex-1 rounded border border-zinc-700 bg-zinc-950 px-2 py-1 text-xs font-mono" />
-        <button onClick={run} disabled={busy} className="rounded bg-[#09637E] px-3 py-1 text-xs text-white disabled:opacity-50">
+        <button onClick={run} disabled={busy} className="rounded bg-indigo-600 px-3 py-1 text-xs text-white disabled:opacity-50">
           {t("run", lang)}
         </button>
       </div>
@@ -398,7 +398,7 @@ function ImagesTab({ canAct, lang }: { canAct: boolean; lang: any }) {
           <input value={pullInput} onChange={(e) => setPullInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && pull()}
             placeholder={t("imagePullPlaceholder", lang)}
             className="flex-1 rounded border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm" />
-          <button onClick={pull} disabled={pulling} className="rounded bg-[#09637E] px-4 py-1.5 text-sm text-white disabled:opacity-50">
+          <button onClick={pull} disabled={pulling} className="rounded bg-indigo-600 px-4 py-1.5 text-sm text-white disabled:opacity-50">
             {t("imagePull", lang)}
           </button>
         </div>
@@ -633,11 +633,11 @@ export default function Page() {
         <>
           <div className="flex flex-wrap items-center gap-2 px-6 pt-4">
             <button onClick={() => setView("grouped")}
-              className={`rounded px-3 py-1 text-xs ${view === "grouped" ? "bg-[#09637E] text-white" : "border border-zinc-700"}`}>
+              className={`rounded px-3 py-1 text-xs ${view === "grouped" ? "bg-indigo-600 text-white" : "border border-zinc-700"}`}>
               {t("groupedView", lang)}
             </button>
             <button onClick={() => setView("flat")}
-              className={`rounded px-3 py-1 text-xs ${view === "flat" ? "bg-[#09637E] text-white" : "border border-zinc-700"}`}>
+              className={`rounded px-3 py-1 text-xs ${view === "flat" ? "bg-indigo-600 text-white" : "border border-zinc-700"}`}>
               {t("flatView", lang)}
             </button>
             <button onClick={() => mutate()} className="rounded border border-zinc-700 px-3 py-1 text-xs">{t("refresh", lang)}</button>

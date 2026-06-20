@@ -455,7 +455,7 @@ export default function Page() {
         <div className="mt-3 flex items-center gap-3">
           <button
             onClick={saveConfig}
-            className="rounded bg-[#09637E] px-3 py-1.5 text-sm text-white hover:bg-[#088395]"
+            className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500"
           >
             {t("saveConfig", L)}
           </button>
@@ -557,7 +557,7 @@ export default function Page() {
           <button
             onClick={runCompare}
             disabled={cmpFrom === cmpTo || cmpLoading}
-            className="rounded bg-[#09637E] px-3 py-1.5 text-white hover:bg-[#088395] disabled:opacity-50"
+            className="rounded bg-indigo-600 px-3 py-1.5 text-white hover:bg-indigo-500 disabled:opacity-50"
           >
             {cmpLoading ? t("loading", L) : t("compareRun", L)}
           </button>
@@ -781,7 +781,7 @@ export default function Page() {
           />
           <button
             onClick={createRelease}
-            className="rounded bg-[#09637E] px-3 py-1 text-white hover:bg-[#088395]"
+            className="rounded bg-indigo-600 px-3 py-1 text-white hover:bg-indigo-500"
           >
             {t("create", L)}
           </button>
@@ -879,7 +879,7 @@ export default function Page() {
           <button
             onClick={computeDiff}
             disabled={!diffA || !diffB}
-            className="rounded bg-[#09637E] px-3 py-1.5 text-white hover:bg-[#088395] disabled:opacity-50"
+            className="rounded bg-indigo-600 px-3 py-1.5 text-white hover:bg-indigo-500 disabled:opacity-50"
           >
             {t("computeDiff", L)}
           </button>

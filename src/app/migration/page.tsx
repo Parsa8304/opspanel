@@ -163,7 +163,7 @@ export default function Page() {
           </div>
           <p className="mt-2 text-xs text-slate-500">{t("migSnapshotWarn", lang)}</p>
           <button
-            className="mt-3 rounded bg-[#09637E] hover:bg-[#088395] px-3 py-1.5 text-sm text-white disabled:opacity-50"
+            className="mt-3 rounded bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-sm text-white disabled:opacity-50"
             disabled={
               !!busy ||
               !form.sourceHostName ||
@@ -241,7 +241,7 @@ export default function Page() {
                   )}
                   {p.status === "preflight" && (
                     <button
-                      className="rounded bg-[#09637E] hover:bg-[#088395] px-2 py-1 text-xs text-white disabled:opacity-50"
+                      className="rounded bg-indigo-600 hover:bg-indigo-500 px-2 py-1 text-xs text-white disabled:opacity-50"
                       disabled={!!busy}
                       onClick={() => call(`/api/migration/plans/${p.id}/run`)}
                     >

@@ -70,7 +70,7 @@ function TextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className={`w-full rounded border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-zinc-200 placeholder:text-zinc-600 focus:border-[#09637E] focus:outline-none ${className}`}
+      className={`w-full rounded border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-zinc-200 placeholder:text-zinc-600 focus:border-indigo-500 focus:outline-none ${className}`}
     />
   );
 }
@@ -88,7 +88,7 @@ function Btn({
 }) {
   const cls =
     variant === "primary"
-      ? "bg-[#09637E] text-white hover:bg-[#088395]"
+      ? "bg-indigo-600 text-white hover:bg-indigo-500"
       : variant === "danger"
       ? "border border-red-700/50 text-red-400 hover:border-red-600"
       : variant === "warning"
@@ -348,7 +348,7 @@ function DockerDaemonSection({ lang }: { lang: "en" | "fa" }) {
               onChange={(e) => setJsonText(e.target.value)}
               rows={10}
               dir="ltr"
-              className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 font-mono text-xs text-zinc-300 focus:border-[#09637E] focus:outline-none"
+              className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 font-mono text-xs text-zinc-300 focus:border-indigo-500 focus:outline-none"
             />
           )}
         </Field>
@@ -872,7 +872,7 @@ function FirewallSection({ lang }: { lang: "en" | "fa" }) {
               <select
                 value={addProto}
                 onChange={(e) => setAddProto(e.target.value as "tcp" | "udp" | "any")}
-                className="rounded border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-zinc-200 focus:border-[#09637E] focus:outline-none"
+                className="rounded border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-zinc-200 focus:border-indigo-500 focus:outline-none"
               >
                 <option value="tcp">tcp</option>
                 <option value="udp">udp</option>
@@ -1322,7 +1322,7 @@ function NetworkSection({ lang }: { lang: "en" | "fa" }) {
               <select
                 value={diagTool}
                 onChange={(e) => setDiagTool(e.target.value)}
-                className="rounded border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-zinc-200 focus:border-[#09637E] focus:outline-none"
+                className="rounded border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-zinc-200 focus:border-indigo-500 focus:outline-none"
               >
                 <option value="ping">ping</option>
                 <option value="curl">curl</option>

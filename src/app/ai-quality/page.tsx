@@ -610,7 +610,7 @@ function RegressionCase({
           <button
             onClick={run}
             disabled={running}
-            className="inline-flex items-center gap-1 rounded bg-[#09637E] text-white px-2 py-1 text-xs disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded bg-indigo-600 text-white px-2 py-1 text-xs disabled:opacity-50"
           >
             <Play size={12} />
             {running ? t("aiqRunning", lang) : t("aiqRerun", lang)}
@@ -871,7 +871,7 @@ function ProviderConfig({
           <div className="flex items-center gap-3">
             <button
               onClick={save}
-              className="rounded bg-[#09637E] text-white px-3 py-1.5 text-xs"
+              className="rounded bg-indigo-600 text-white px-3 py-1.5 text-xs"
             >
               {t("aiqSave", lang)}
             </button>
@@ -1049,7 +1049,7 @@ function PromptTracking({ lang, canEngineer }: { lang: Lang; canEngineer: boolea
         </label>
         {canEngineer && (
           <button
-            className="inline-flex items-center gap-1 rounded bg-[#09637E] text-white px-3 py-1 hover:bg-[#088395]"
+            className="inline-flex items-center gap-1 rounded bg-indigo-600 text-white px-3 py-1 hover:bg-indigo-500"
             onClick={() => setShowForm((s) => !s)}
           >
             <Plus size={12} /> {t("aiqPromptNew", lang)}
@@ -1070,7 +1070,7 @@ function PromptTracking({ lang, canEngineer }: { lang: Lang; canEngineer: boolea
           <textarea rows={4} className="w-full bg-transparent border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1 font-mono" placeholder={t("aiqPromptTemplate", lang)} value={form.template} onChange={(e) => setForm({ ...form, template: e.target.value })} />
           <input className="w-full bg-transparent border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1" placeholder={t("aiqPromptNotes", lang)} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
           <div className="flex gap-2">
-            <button disabled={busy} onClick={save} className="rounded bg-[#09637E] text-white px-3 py-1 hover:bg-[#088395] disabled:opacity-50">{t("aiqSave", lang)}</button>
+            <button disabled={busy} onClick={save} className="rounded bg-indigo-600 text-white px-3 py-1 hover:bg-indigo-500 disabled:opacity-50">{t("aiqSave", lang)}</button>
             <button onClick={() => setShowForm(false)} className="rounded border border-zinc-300 dark:border-zinc-700 px-3 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800">{t("cancel", lang) || "Cancel"}</button>
           </div>
         </div>
@@ -1237,7 +1237,7 @@ function FallbackPolicies({ lang, canEngineer }: { lang: Lang; canEngineer: bool
             {availableModules.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
           <button
-            className="inline-flex items-center gap-1 rounded bg-[#09637E] text-white px-3 py-1 hover:bg-[#088395]"
+            className="inline-flex items-center gap-1 rounded bg-indigo-600 text-white px-3 py-1 hover:bg-indigo-500"
             onClick={() => setShowAdd(true)}
           >
             <Plus size={12} /> Add
@@ -1308,7 +1308,7 @@ function FallbackForm({
   };
 
   return (
-    <div className="rounded border border-[#09637E]/40 bg-[#09637E]/5 p-4 space-y-3 text-xs">
+    <div className="rounded border border-indigo-500/40 bg-indigo-600/5 p-4 space-y-3 text-xs">
       <div className="font-semibold text-sm">{module}</div>
       <div className="grid gap-2 sm:grid-cols-2">
         <label className="flex flex-col gap-1">
@@ -1358,7 +1358,7 @@ function FallbackForm({
       </div>
       <input className="w-full bg-transparent border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1" placeholder={t("aiqPromptNotes", lang)} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
       <div className="flex gap-2">
-        <button disabled={busy} onClick={save} className="rounded bg-[#09637E] text-white px-3 py-1 hover:bg-[#088395] disabled:opacity-50 inline-flex items-center gap-1"><Check size={12} /> {t("aiqSave", lang)}</button>
+        <button disabled={busy} onClick={save} className="rounded bg-indigo-600 text-white px-3 py-1 hover:bg-indigo-500 disabled:opacity-50 inline-flex items-center gap-1"><Check size={12} /> {t("aiqSave", lang)}</button>
         <button onClick={onCancel} className="rounded border border-zinc-300 dark:border-zinc-700 px-3 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 inline-flex items-center gap-1"><X size={12} /></button>
       </div>
     </div>

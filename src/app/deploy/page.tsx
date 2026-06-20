@@ -403,7 +403,7 @@ export default function Page() {
             <div className="md:col-span-3 flex items-end">
               <button
                 onClick={loadPlan}
-                className="bg-[#09637E] hover:bg-[#088395] text-white rounded px-4 py-2 text-sm"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white rounded px-4 py-2 text-sm"
               >
                 {t("dpReview", lang)}
               </button>
@@ -623,7 +623,7 @@ export default function Page() {
               </button>
               <button
                 disabled={!canDeploy}
-                className="px-4 py-2 text-sm rounded bg-[#09637E] hover:bg-[#088395] text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed"
                 onClick={() => setConfirmDeploy(true)}
               >
                 {t("dpDeployNow", lang)}
@@ -742,7 +742,7 @@ function ConfigEditor({
       <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
         <button
           onClick={save}
-          className="bg-[#09637E] hover:bg-[#088395] text-white rounded px-4 py-2 text-sm"
+          className="bg-indigo-600 hover:bg-indigo-500 text-white rounded px-4 py-2 text-sm"
         >
           {t("dpSave", lang)}
         </button>

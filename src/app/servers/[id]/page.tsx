@@ -250,7 +250,7 @@ export default function ServerDetailPage() {
             <button
               onClick={run}
               disabled={busy || !!runningJob || !cmd.trim()}
-              className="flex items-center gap-1.5 bg-[#09637E] hover:bg-[#088395] text-white rounded px-3 py-1.5 text-xs disabled:opacity-40"
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded px-3 py-1.5 text-xs disabled:opacity-40"
             >
               <Play size={11} /> Run
             </button>

@@ -162,7 +162,7 @@ export default function Page() {
             onClick={() => setTab(tk)}
             className={`rounded px-3 py-1.5 border ${
               tab === tk
-                ? "bg-[#09637E] text-white border-[#09637E]"
+                ? "bg-indigo-600 text-white border-indigo-500"
                 : "border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
             }`}
           >
@@ -720,7 +720,7 @@ function ChannelForm({ lang, onDone }: { lang: any; onDone: () => void }) {
             setErr(e.message);
           }
         }}
-        className="rounded bg-[#09637E] text-white px-3 py-1.5"
+        className="rounded bg-indigo-600 text-white px-3 py-1.5"
       >
         {t("alAdd", lang)}
       </button>
@@ -776,7 +776,7 @@ function ConfigForm({
             setErr(e.message);
           }
         }}
-        className="rounded bg-[#09637E] text-white px-3 py-1.5"
+        className="rounded bg-indigo-600 text-white px-3 py-1.5"
       >
         {t("alSave", lang)}
       </button>

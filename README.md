@@ -1,9 +1,24 @@
-# OpsPanel
+<p align="center">
+  <img src=".github/assets/banner.svg" alt="OpsPanel — self-hosted DevOps control panel" width="100%">
+</p>
 
-A self-hosted **DevOps control panel** for a single server (or a small fleet).
-One dashboard for container management, deployments, remote-server SSH ops, port
-mapping, backups, alerting, and infrastructure deploys — with role-based access,
-2FA, and an append-only audit log.
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-22d3ee?style=flat-square" alt="MIT License">
+  <img src="https://img.shields.io/badge/Next.js-14-818cf8?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 14">
+  <img src="https://img.shields.io/badge/Prisma-6-818cf8?style=flat-square&logo=prisma&logoColor=white" alt="Prisma 6">
+  <img src="https://img.shields.io/badge/PostgreSQL-16-22d3ee?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL 16">
+  <img src="https://img.shields.io/badge/TypeScript-strict-818cf8?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/self--hosted-✔-22d3ee?style=flat-square" alt="Self-hosted">
+  <img src="https://img.shields.io/badge/PRs-welcome-818cf8?style=flat-square" alt="PRs welcome">
+</p>
+
+<p align="center">
+  <b>One dashboard for your whole server.</b><br>
+  Containers · deployments · remote-server SSH · port mapping · backups · alerting —<br>
+  with role-based access, 2FA, and an append-only audit log.
+</p>
+
+---
 
 > ⚠️ **This is a privileged tool.** It can run commands on the host and manage
 > Docker. Treat it like a root shell exposed over HTTP — run it on a host you
@@ -76,21 +91,14 @@ editors), stored in the `Setting` table. Key environment variables (see
 
 ## Features
 
-- **Overview** — readiness score, active alerts, real trend sparklines
-- **Containers** — live Docker: stats, logs (SSE), exec, compose grouping
-- **Servers** — register remote hosts, run commands / inspect SSH config over SSH
-- **Port Map** — real `ss`/`netstat`/Docker port observation, conflict &
-  public-exposure findings, stale allocation history
-- **Deploy / Versions** — git-integrated history, env matrix, blue-green / rolling
-  / recreate strategies, migration detection, health gating, rollback
-- **Infrastructure Deploy** — editable, config-driven deploy steps run on the host
-- **Migration** — host-to-host service/data migration via ansible-runner
-- **Backup & Restore**, **Domains & SSL**, **Cron Jobs**
-- **Async Pipeline** — Redis/Celery queue depth, dead-letter, SSE stream
-- **Integrations Health**, **Alerts** (Telegram/webhook), **Discovery**
-- **Q/A Tracking**, **Test Logs** (JUnit), **Code Benchmarks**, **AI Quality**
-- **Billing & Cost**, **Reports** (EN/FA, MD/HTML/PDF)
-- **Access & Audit** — users/roles, TOTP 2FA, append-only audit log
+|  |  |  |
+|---|---|---|
+| 📊 **Overview** — readiness score, active alerts, live trend sparklines | 🐳 **Containers** — Docker stats, logs (SSE), exec, compose grouping | 🖥️ **Servers** — register remote hosts, run commands over SSH |
+| 🌐 **Port Map** — real `ss`/`netstat`/Docker observation, conflict & exposure findings | 🚀 **Deploy / Versions** — git history, env matrix, blue-green / rolling / recreate, rollback | 🏗️ **Infra Deploy** — editable, config-driven deploy steps on the host |
+| 🔀 **Migration** — host-to-host service/data migration via ansible-runner | 💾 **Backup & Restore** — schedules, discovered jobs, restore | 🔐 **Domains & SSL** — cert expiry & DNS checks |
+| ⏰ **Cron Jobs** — host crontab management | ⚡ **Async Pipeline** — Redis/Celery queue depth, dead-letter, SSE stream | 🔔 **Alerts** — Telegram/webhook, rules, ack/snooze |
+| 🔌 **Integrations** — health, test-connection, incidents | 🔎 **Discovery** — auto-detect services from Docker/compose | ✅ **Q/A & Tests** — JUnit ingest, flaky detection, coverage |
+| 📈 **Code Benchmarks** — LOC/complexity/lint, API p50/95/99 | 💰 **Billing & Cost** — usage ingest, budgets, reconciliation | 🛡️ **Access & Audit** — roles, TOTP 2FA, append-only log |
 
 ## Tests
 

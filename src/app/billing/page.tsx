@@ -21,11 +21,11 @@ const card =
 const inp =
   "rounded border border-zinc-300 dark:border-zinc-700 bg-transparent px-2 py-1 text-sm";
 const btn =
-  "rounded bg-[#09637E] text-white px-3 py-1 text-sm hover:bg-[#088395] disabled:opacity-50";
+  "rounded bg-indigo-600 text-white px-3 py-1 text-sm hover:bg-indigo-500 disabled:opacity-50";
 const tabBtn = (active: boolean) =>
   `px-3 py-1.5 text-sm rounded ${
     active
-      ? "bg-[#09637E] text-white"
+      ? "bg-indigo-600 text-white"
       : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
   }`;
 
@@ -294,7 +294,7 @@ function BudgetBar({ b, lang }: { b: any; lang: any }) {
       ? "bg-red-600"
       : b.pct >= 80
       ? "bg-amber-500"
-      : "bg-[#09637E]";
+      : "bg-indigo-600";
   return (
     <div>
       <div className="flex justify-between text-sm mb-1">
@@ -1069,7 +1069,7 @@ function ModuleBudgetManager({ lang }: { lang: any }) {
         <div className="space-y-2">
           {budgets.map((b: any) => {
             const pct = Math.min(100, b.pct);
-            const color = b.pct >= 100 ? "bg-red-600" : b.pct >= 80 ? "bg-amber-500" : "bg-[#09637E]";
+            const color = b.pct >= 100 ? "bg-red-600" : b.pct >= 80 ? "bg-amber-500" : "bg-indigo-600";
             return (
               <div key={b.id}>
                 <div className="flex justify-between text-sm mb-1">
