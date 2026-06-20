@@ -200,10 +200,11 @@ export interface ComposeDiscovery {
   versionDrift: ComposeReconcileItem[];
 }
 
-const COMPOSE_GLOB_DIRS = [
-  "/opt",
-  "/home/parsa/panel",
-];
+// Directories scanned for docker-compose files. Override with a
+// colon-separated COMPOSE_SCAN_DIRS (e.g. "/opt:/srv:/home/me/app").
+const COMPOSE_GLOB_DIRS = (process.env.COMPOSE_SCAN_DIRS || "/opt:/srv").split(
+  ":"
+);
 
 async function autoDetectComposeFiles(): Promise<string[]> {
   const found = new Set<string>();
@@ -213,14 +214,16 @@ async function autoDetectComposeFiles(): Promise<string[]> {
     "compose.yml",
     "compose.yaml",
   ];
-  // /home/parsa/panel/docker-compose.yml — known panel file (depth 0)
-  for (const n of names) {
-    const p = path.join("/home/parsa/panel", n);
-    try {
-      await fs.access(p);
-      found.add(p);
-    } catch {
-      /* not present — honest skip */
+  // Configured scan dirs at depth 0 (e.g. the app's own compose file).
+  for (const dir of COMPOSE_GLOB_DIRS) {
+    for (const n of names) {
+      const p = path.join(dir, n);
+      try {
+        await fs.access(p);
+        found.add(p);
+      } catch {
+        /* not present — honest skip */
+      }
     }
   }
   // /opt/<project>/docker-compose.y*ml and /home/<user>/<project>/...

@@ -235,7 +235,7 @@ test("cleanup: remove only rows created by this test; seeded data intact", async
 
   // Seeded data still present.
   const seededAdmin = await prisma.user.findUnique({
-    where: { email: "admin@karefun.ai" },
+    where: { email: "admin@example.com" },
   });
   assert.ok(seededAdmin, "seeded admin must remain intact");
   const seededScenarios = await prisma.accessScenario.count();

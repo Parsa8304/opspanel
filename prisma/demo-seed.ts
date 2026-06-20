@@ -305,7 +305,7 @@ async function seed() {
   const alerts = [
     { sev: "WARN", src: "billing_budget", title: "OpenRouter spend at 50% of monthly budget", ack: "acked" },
     { sev: "INFO", src: "deploy", title: "Deploy to PROD succeeded (v2.7.1)", ack: "acked" },
-    { sev: "ERROR", src: "container_logs", title: "mn2-backend: transient 503 (auto-recovered)", ack: "acked" },
+    { sev: "ERROR", src: "container_logs", title: "api-backend: transient 503 (auto-recovered)", ack: "acked" },
     { sev: "INFO", src: "tests", title: "Nightly test suite passed (214/214)", ack: "acked" },
   ];
   for (const a of alerts)

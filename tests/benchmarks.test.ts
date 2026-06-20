@@ -27,7 +27,7 @@ async function mkTmp(): Promise<string> {
 }
 
 test("analyzeRepo on real source dir yields real non-zero metrics", async () => {
-  const res = await analyzeRepo("/home/parsa/panel/src", {
+  const res = await analyzeRepo("/opt/app/src", {
     skipTools: true,
   });
   assert.ok(res.loc > 0, `expected loc > 0, got ${res.loc}`);

@@ -9,7 +9,7 @@ import {
   applyProposalEffect,
 } from "../src/lib/discovery";
 
-const PANEL_COMPOSE = "/home/parsa/panel/docker-compose.yml";
+const PANEL_COMPOSE = "/opt/app/docker-compose.yml";
 
 // A secret value we control: it must NEVER end up stored in any proposal/evidence.
 const SECRET_CANARY = "SECRETVALUE_DO_NOT_STORE_abc123XYZ";

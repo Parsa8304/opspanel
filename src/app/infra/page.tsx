@@ -282,8 +282,8 @@ export default function InfraPage() {
   return (
     <div>
       <PageHeader
-        title="MN Infrastructure"
-        desc="Deploy Market Navigator services. Commands run directly on the host via nsenter."
+        title="Infrastructure Deploy"
+        desc="Run your configured deploy steps on the host. Commands run directly on the host via nsenter — edit the steps below."
       />
 
       <div className="p-6 space-y-6">
@@ -309,7 +309,7 @@ export default function InfraPage() {
         {/* Container status */}
         <div className="rounded-lg border border-zinc-200 dark:border-zinc-800">
           <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 text-sm font-medium flex items-center justify-between">
-            <span>MN Container Status</span>
+            <span>Container Status</span>
             <button onClick={() => refetchStatus()}
               className="text-zinc-400 hover:text-zinc-200 p-1 rounded" title="Refresh">
               <RefreshCw size={13} className={loadingStatus ? "animate-spin" : ""} />

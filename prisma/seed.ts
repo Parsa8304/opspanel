@@ -4,6 +4,7 @@
  */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -57,21 +58,18 @@ const SCENARIOS = [
 ];
 
 async function main() {
-  const pw = await bcrypt.hash("admin1234", 10);
+  // Admin bootstrap. Set ADMIN_EMAIL / ADMIN_PASSWORD to control the first
+  // account; otherwise a random password is generated and printed ONCE so it
+  // never ships as a known default. Change it immediately after first login.
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+  const generatedPw = !process.env.ADMIN_PASSWORD;
+  const adminPlain =
+    process.env.ADMIN_PASSWORD || crypto.randomBytes(12).toString("base64url");
+  const pw = await bcrypt.hash(adminPlain, 10);
   const admin = await prisma.user.upsert({
-    where: { email: "admin@karefun.ai" },
+    where: { email: adminEmail },
     update: {},
-    create: { email: "admin@karefun.ai", name: "Panel Admin", role: "ADMIN", passwordHash: pw },
-  });
-  await prisma.user.upsert({
-    where: { email: "engineer@karefun.ai" },
-    update: {},
-    create: { email: "engineer@karefun.ai", name: "Engineer", role: "ENGINEER", passwordHash: pw },
-  });
-  await prisma.user.upsert({
-    where: { email: "reviewer@karefun.ai" },
-    update: {},
-    create: { email: "reviewer@karefun.ai", name: "Reviewer", role: "REVIEWER", passwordHash: pw },
+    create: { email: adminEmail, name: "Admin", role: "ADMIN", passwordHash: pw },
   });
 
   for (const m of MODULES) {
@@ -106,7 +104,13 @@ async function main() {
       });
   }
 
-  console.log(`Seeded. Admin login: admin@karefun.ai / admin1234 (user ${admin.id})`);
+  if (generatedPw) {
+    console.log(
+      `\n  Seeded admin account: ${adminEmail}\n  Temporary password:   ${adminPlain}\n  ⚠  Change this password immediately after first login.\n`
+    );
+  } else {
+    console.log(`Seeded admin account: ${adminEmail} (password from ADMIN_PASSWORD).`);
+  }
 }
 
 main()

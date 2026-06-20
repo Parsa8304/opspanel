@@ -44,3 +44,6 @@ panel-db-*.sql
 panel-postgres-backup-*.sql
 panel-pgdata-backup-*.tar.gz
 *.sql.gz
+
+# Claude Code local state
+.claude/

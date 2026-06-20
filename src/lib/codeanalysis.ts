@@ -541,7 +541,7 @@ export interface BenchmarksConfig {
 export const BENCHMARKS_SETTING_KEY = "benchmarks";
 
 export const DEFAULT_BENCHMARKS_CONFIG: BenchmarksConfig = {
-  targetDir: "/home/parsa/panel",
+  targetDir: process.env.CODE_TARGET_DIR || "/opt/app",
   buildCmd: "npm run build",
   endpoints: [
     { name: "Overview API",        url: "http://localhost:3000/api/overview" },

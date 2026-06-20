@@ -24,18 +24,23 @@ export interface InfraDeployConfig {
 
 const SETTING_KEY = "infra_deploy_config";
 
+// Default deploy target on the host. Override with INFRA_DEPLOY_DIR, or edit
+// the steps in the Infrastructure Deploy page (stored in the DB Setting).
+const DEPLOY_DIR = process.env.INFRA_DEPLOY_DIR || "/opt/app";
+const COMPOSE = `${DEPLOY_DIR}/docker-compose.yml`;
+
 const DEFAULT_CONFIG: InfraDeployConfig = {
   timeoutSec: 600,
   steps: [
-    { label: "git pull", cmd: "git -C /opt/marketnavigator pull origin main" },
-    { label: "docker compose up", cmd: "docker compose -f /opt/marketnavigator/docker-compose.yml up -d --build" },
+    { label: "git pull", cmd: `git -C ${DEPLOY_DIR} pull origin main` },
+    { label: "docker compose up", cmd: `docker compose -f ${COMPOSE} up -d --build` },
     { label: "prune images", cmd: "docker image prune -f", allowFail: true },
-    { label: "show status", cmd: "docker compose -f /opt/marketnavigator/docker-compose.yml ps", allowFail: true },
+    { label: "show status", cmd: `docker compose -f ${COMPOSE} ps`, allowFail: true },
   ],
   dryRunSteps: [
-    { label: "git fetch", cmd: "git -C /opt/marketnavigator fetch origin" },
-    { label: "git log (incoming)", cmd: "git -C /opt/marketnavigator log HEAD..origin/main --oneline" },
-    { label: "docker compose build", cmd: "docker compose -f /opt/marketnavigator/docker-compose.yml build --no-cache" },
+    { label: "git fetch", cmd: `git -C ${DEPLOY_DIR} fetch origin` },
+    { label: "git log (incoming)", cmd: `git -C ${DEPLOY_DIR} log HEAD..origin/main --oneline` },
+    { label: "docker compose build", cmd: `docker compose -f ${COMPOSE} build --no-cache` },
   ],
 };
 

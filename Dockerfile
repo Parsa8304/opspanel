@@ -1,4 +1,4 @@
-# Production image for the Market Navigator Internal Panel (Next.js + Prisma)
+# Production image for OpsPanel (Next.js + Prisma)
 FROM node:20-bookworm-slim AS base
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates git \
     && rm -rf /var/lib/apt/lists/*

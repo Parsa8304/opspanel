@@ -38,7 +38,11 @@ export function generateTotpSecret(): string {
  * Build the otpauth:// URI for QR-code enrollment.
  * secret is the raw base64url string from generateTotpSecret().
  */
-export function totpUri(account: string, secret: string, issuer = "MN Panel"): string {
+export function totpUri(
+  account: string,
+  secret: string,
+  issuer = process.env.NEXT_PUBLIC_APP_NAME || "OpsPanel"
+): string {
   const enc = encodeURIComponent;
   // Convert base64url → base32 for standard authenticator compatibility.
   const b32 = base64urlToBase32(secret);

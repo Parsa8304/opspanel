@@ -29,12 +29,12 @@ export const NAV = [
   { key: "drift", href: "/drift", en: "Env Drift", fa: "انحراف محیط" },
   { key: "compare", href: "/compare", en: "Release Compare", fa: "مقایسه نسخه‌ها" },
   { key: "depmap", href: "/depmap", en: "Dependency Map", fa: "نقشه وابستگی‌ها" },
-  { key: "infra", href: "/infra", en: "MN Infrastructure", fa: "زیرساخت MN" },
+  { key: "infra", href: "/infra", en: "Infrastructure Deploy", fa: "استقرار زیرساخت" },
   { key: "servers", href: "/servers", en: "Remote Servers", fa: "سرورهای دیگر" },
 ] as const;
 
 const DICT: Record<string, { en: string; fa: string }> = {
-  appName: { en: "Market Navigator — Panel", fa: "مارکت ناویگیتور — پنل" },
+  appName: { en: "OpsPanel", fa: "اپس‌پنل" },
   signIn: { en: "Sign in", fa: "ورود" },
   email: { en: "Email", fa: "ایمیل" },
   password: { en: "Password", fa: "رمز عبور" },

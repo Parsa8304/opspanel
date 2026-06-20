@@ -5,8 +5,9 @@ import { hostExec } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
-const MN_DIR = "/opt/marketnavigator";
-const COMPOSE_FILE = `${MN_DIR}/docker-compose.yml`;
+// Deploy target directory on the host. Override with INFRA_DEPLOY_DIR.
+const DEPLOY_DIR = process.env.INFRA_DEPLOY_DIR || "/opt/app";
+const COMPOSE_FILE = `${DEPLOY_DIR}/docker-compose.yml`;
 
 export const GET = handler(async (req: NextRequest) => {
   await requireRole(req, "READONLY");
@@ -17,7 +18,7 @@ export const GET = handler(async (req: NextRequest) => {
       15000
     ),
     hostExec(
-      `git -C ${MN_DIR} log -1 --format='%H|%h|%an|%ai|%s' 2>/dev/null`,
+      `git -C ${DEPLOY_DIR} log -1 --format='%H|%h|%an|%ai|%s' 2>/dev/null`,
       10000
     ),
   ]);
@@ -81,5 +82,5 @@ export const GET = handler(async (req: NextRequest) => {
     }
   }
 
-  return json({ containers, commit, dir: MN_DIR });
+  return json({ containers, commit, dir: DEPLOY_DIR });
 });

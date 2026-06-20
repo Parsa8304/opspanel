@@ -421,7 +421,7 @@ export default function Page() {
               onChange={(e) =>
                 setForm({ ...cfgForm, repoPath: e.target.value })
               }
-              placeholder="/home/parsa/panel"
+              placeholder="/opt/app"
               className="rounded border border-zinc-300 dark:border-zinc-700 bg-transparent px-2 py-1"
             />
           </label>
