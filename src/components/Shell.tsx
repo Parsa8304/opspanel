@@ -13,7 +13,7 @@ import {
   Package, Rocket, GitMerge, FlaskConical,
   ClipboardCheck, BarChart2, Sparkles,
   ShieldCheck, Bell, Plug, DollarSign, FileText, Search, Settings,
-  ScrollText, Milestone, BookOpen, HardDrive, Globe2, CalendarClock,
+  ScrollText, BookOpen, HardDrive, Globe2, CalendarClock,
   GitFork, GitCompare, Share2, CloudUpload, Router, Dot,
 } from "lucide-react";
 
@@ -22,7 +22,7 @@ type NavKey = typeof NAV[number]["key"];
 /* ─── Sidebar grouping ──────────────────────────────────────────────────── */
 const NAV_GROUPS: { en: string; fa: string; items: NavKey[] }[] = [
   { en: "Dashboard",         fa: "داشبورد",         items: ["overview"] },
-  { en: "Operations",        fa: "عملیات",           items: ["containers", "server", "ports", "async", "logs", "scraper-flow", "runbooks", "depmap"] },
+  { en: "Operations",        fa: "عملیات",           items: ["containers", "server", "ports", "async", "logs", "runbooks", "depmap"] },
   { en: "Delivery",          fa: "تحویل",            items: ["deployments", "deploy", "migration", "tests"] },
   { en: "Quality",           fa: "کیفیت",            items: ["qa", "benchmarks", "ai-quality"] },
   { en: "Security & Control",fa: "امنیت و کنترل",   items: ["access", "alerts", "integrations"] },
@@ -52,7 +52,6 @@ const NAV_ICON: Record<NavKey, React.ReactNode> = {
   discovery:   <Search size={15} />,
   settings:    <Settings size={15} />,
   logs:           <ScrollText size={15} />,
-  "scraper-flow": <Milestone size={15} />,
   runbooks:       <BookOpen size={15} />,
   backup:         <HardDrive size={15} />,
   domains:        <Globe2 size={15} />,
@@ -109,11 +108,29 @@ export function Shell({ children }: { children: React.ReactNode }) {
           className="flex items-center gap-2.5 px-4 py-[14px]"
           style={{ borderBottom: "1px solid var(--border)" }}
         >
+          {/* Terminal-glyph logo mark */}
           <div
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-[10px] font-black tracking-tight"
-            style={{ background: "var(--primary)", color: "var(--accent)" }}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+            style={{
+              background: "linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)",
+              boxShadow: "0 2px 8px rgba(99,102,241,0.35)",
+            }}
           >
-            MN
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M5 8l4 4-4 4"
+                stroke="#ffffff"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M12.5 16h6"
+                stroke="#ffffff"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+            </svg>
           </div>
           <span className="truncate text-[13px] font-semibold leading-tight text-white">
             {t("appName", lang)}

@@ -8,11 +8,10 @@ export const NAV = [
   { key: "integrations", href: "/integrations", en: "Integrations", fa: "یکپارچه‌سازی‌ها" },
   { key: "async", href: "/async", en: "Async Pipeline", fa: "صف پردازش" },
   { key: "logs", href: "/logs", en: "ELK Logs", fa: "لاگ‌های ELK" },
-  { key: "scraper-flow", href: "/scraper-flow", en: "Scraper Flow", fa: "جریان اسکرپر" },
   { key: "runbooks", href: "/runbooks", en: "Runbooks", fa: "راهنمای عملیاتی" },
   { key: "backup", href: "/backup", en: "Backup & Restore", fa: "پشتیبان‌گیری" },
   { key: "domains", href: "/domains", en: "Domains & SSL", fa: "دامنه‌ها و SSL" },
-  { key: "deployments", href: "/deployments", en: "Versions & Deploy", fa: "نسخه‌ها و استقرار" },
+  { key: "deployments", href: "/deployments", en: "Releases & History", fa: "نسخه‌ها و تاریخچه" },
   { key: "tests", href: "/tests", en: "Test Logs", fa: "گزارش تست‌ها" },
   { key: "benchmarks", href: "/benchmarks", en: "Code Benchmarks", fa: "سنجه‌های کد" },
   { key: "ai-quality", href: "/ai-quality", en: "AI Quality", fa: "کیفیت هوش مصنوعی" },
@@ -236,7 +235,7 @@ const DICT: Record<string, { en: string; fa: string }> = {
     fa: "برای تغییر نیاز به نقش مهندس دارید.",
   },
   // Version & Deployment Tracking (Section 6)
-  deployTracking: { en: "Version & Deployment Tracking", fa: "پیگیری نسخه و استقرار" },
+  deployTracking: { en: "Releases & History", fa: "نسخه‌ها و تاریخچه" },
   deployTrackingDesc: {
     en: "Git-integrated deployments, releases and diffs — read from a real configured repo, never invented.",
     fa: "استقرارها، انتشارها و تفاوت‌های یکپارچه با گیت — از یک مخزن واقعی پیکربندی‌شده خوانده می‌شود، هرگز ساختگی نیست.",

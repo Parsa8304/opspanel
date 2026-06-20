@@ -23,7 +23,9 @@
 
   --shadow-card: 0 1px 3px rgba(79,70,229,0.08), 0 1px 2px rgba(0,0,0,0.05);
 
-  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-sans: var(--font-ui), ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: var(--font-code), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--font-sans);
 }
 
 /* ─── Dark mode ───────────────────────────────────── */
@@ -45,16 +47,27 @@
 }
 
 html[dir="rtl"] {
-  font-family: "Vazirmatn", "IRANSans", "Segoe UI", Tahoma, sans-serif;
+  --font-sans: "Vazirmatn", "IRANSans", "Segoe UI", Tahoma, sans-serif;
 }
 
 html, body { padding: 0; margin: 0; }
+body { font-family: var(--font-sans); }
+
+/* Data reads better with tabular figures across the panel. */
+table, .tabular, [class*="font-mono"] { font-variant-numeric: tabular-nums; }
+
+/* Visible keyboard focus (accessibility, not optional). */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
 /* ─── Scrollbar ───────────────────────────────────── */
 ::-webkit-scrollbar            { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track      { background: transparent; }
 ::-webkit-scrollbar-thumb      { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover{ background: rgba(122,178,178,0.5); }
+::-webkit-scrollbar-thumb:hover{ background: rgba(129,140,248,0.5); }
 
 /* ─── Sidebar — always dark regardless of theme ───── */
 .sidebar-item {
@@ -65,8 +78,8 @@ html, body { padding: 0; margin: 0; }
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 13px;
-  color: #8b95a5;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  color: #8a918d;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
   text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
@@ -79,10 +92,11 @@ html, body { padding: 0; margin: 0; }
 .sidebar-item:hover .sidebar-icon {
   color: #22d3ee;
 }
+.sidebar-item:active { transform: translateY(1px); }
 .sidebar-item.active {
   background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
-  border-left: 3px solid #22d3ee;
-  padding-left: 9px;
+  border-left: 2px solid #22d3ee;
+  padding-left: 10px;
   color: #ffffff;
   box-shadow: 0 2px 12px rgba(99, 102, 241, 0.35);
 }
@@ -92,7 +106,7 @@ html, body { padding: 0; margin: 0; }
 .sidebar-icon {
   flex-shrink: 0;
   color: #5b6486;
-  transition: color 0.15s ease;
+  transition: color 0.18s ease;
 }
 
 /* ─── Sidebar footer buttons — always dark ────────── */
@@ -105,15 +119,15 @@ html, body { padding: 0; margin: 0; }
   border-radius: 6px;
   padding: 6px 0;
   font-size: 12px;
-  background: #11222a;
-  color: #5d7882;
-  border: 1px solid #1f3942;
+  background: #151b30;
+  color: #7a82a8;
+  border: 1px solid #232a45;
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition: color 0.18s ease, background-color 0.18s ease;
 }
 .sidebar-btn:hover {
-  color: #ebf4f6;
-  background: #163039;
+  color: #eef1ff;
+  background: #1c2440;
 }
 .sidebar-btn.danger:hover {
   color: #ef4444;
@@ -128,6 +142,7 @@ html, body { padding: 0; margin: 0; }
 
 @layer utilities {
   .mono {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
   }
 }
