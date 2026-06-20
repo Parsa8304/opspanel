@@ -93,6 +93,37 @@ export async function hostWriteFile(path: string, content: string): Promise<void
   await hostExec(`printf '%s' '${escaped}' > ${JSON.stringify(path)}`);
 }
 
+// ─── sshd_config change validation ──────────────────────────────────────────
+// These values are interpolated into shell commands run as root via nsenter/SSH.
+// A directive key must be a bare alphanumeric token; a value may only contain a
+// conservative charset with NO shell metacharacters, whitespace-splitting, or
+// newlines (which would let an attacker append arbitrary sshd directives or
+// break out of the sed/echo command). Reject anything else outright.
+const SSHD_KEY_RE = /^[A-Za-z][A-Za-z0-9]{0,63}$/;
+const SSHD_VALUE_RE = /^[A-Za-z0-9 _.,:@/=+-]{1,256}$/;
+
+export class SshdConfigError extends Error {}
+
+/** Validate a changes map of sshd_config directives. Throws SshdConfigError. */
+export function validateSshdChanges(
+  changes: Record<string, string>
+): Array<[string, string]> {
+  if (!changes || typeof changes !== "object")
+    throw new SshdConfigError("changes must be an object");
+  const out: Array<[string, string]> = [];
+  for (const [key, rawValue] of Object.entries(changes)) {
+    const value = String(rawValue);
+    if (!SSHD_KEY_RE.test(key))
+      throw new SshdConfigError(`Invalid sshd directive name: ${JSON.stringify(key)}`);
+    if (!SSHD_VALUE_RE.test(value))
+      throw new SshdConfigError(
+        `Invalid value for ${key}: contains disallowed characters`
+      );
+    out.push([key, value]);
+  }
+  return out;
+}
+
 // Helper: parse key=value or key value style config lines
 export function parseConfigLines(text: string): Record<string, string> {
   const result: Record<string, string> = {};

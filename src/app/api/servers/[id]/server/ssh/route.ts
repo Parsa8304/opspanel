@@ -1,28 +1,24 @@
 import { NextRequest } from "next/server";
 import { handler, json } from "@/lib/api";
 import { requireRole, audit } from "@/lib/auth";
-import {
-  hostExec,
-  hostReadFile,
-  parseConfigLines,
-  validateSshdChanges,
-  SshdConfigError,
-} from "@/lib/server";
+import { parseConfigLines, validateSshdChanges, SshdConfigError } from "@/lib/server";
+import { targetExec, targetReadFile } from "@/lib/target";
 
 export const dynamic = "force-dynamic";
 
-export const GET = handler(async (req: NextRequest) => {
+export const GET = handler(async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
   await requireRole(req, "READONLY");
+  const { id } = await ctx.params;
 
   let config: Record<string, string> = {};
   try {
-    const raw = await hostReadFile("/etc/ssh/sshd_config");
+    const raw = await targetReadFile(id, "/etc/ssh/sshd_config");
     config = parseConfigLines(raw);
   } catch {}
 
   let lastLogins: string[] = [];
   try {
-    const { stdout } = await hostExec("last -n 20 -F 2>/dev/null || last -n 20");
+    const { stdout } = await targetExec(id, "last -n 20 -F 2>/dev/null || last -n 20");
     lastLogins = stdout
       .split("\n")
       .filter((l) => l.trim() && !l.startsWith("wtmp"))
@@ -31,7 +27,8 @@ export const GET = handler(async (req: NextRequest) => {
 
   let failedAttempts: string[] = [];
   try {
-    const { stdout } = await hostExec(
+    const { stdout } = await targetExec(
+      id,
       "journalctl -u ssh -u sshd --since '24 hours ago' --no-pager 2>/dev/null | grep -E 'Failed|Invalid|Accepted' | tail -30"
     );
     failedAttempts = stdout.split("\n").filter(Boolean).slice(0, 30);
@@ -43,8 +40,9 @@ export const GET = handler(async (req: NextRequest) => {
   return json({ config, lastLogins, failedAttempts, sshPort, hasPublicKey });
 });
 
-export const POST = handler(async (req: NextRequest) => {
+export const POST = handler(async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
   const u = await requireRole(req, "ADMIN");
+  const { id } = await ctx.params;
   const { changes: rawChanges, applyNow } = (await req.json()) as {
     changes: Record<string, string>;
     applyNow: boolean;
@@ -66,10 +64,11 @@ export const POST = handler(async (req: NextRequest) => {
   // Lockout protection checks
   if (changes["Port"] && changes["Port"] !== "22") {
     const newPort = changes["Port"];
+    // newPort is validated by SSHD_VALUE_RE above; further constrain to digits.
     if (!/^\d+$/.test(newPort))
       return json({ error: "Port must be numeric" }, { status: 400 });
     try {
-      const { stdout } = await hostExec(`ufw status 2>/dev/null | grep -F -- ${JSON.stringify(newPort)} || true`);
+      const { stdout } = await targetExec(id, `ufw status 2>/dev/null | grep -F -- ${JSON.stringify(newPort)} || true`);
       if (!stdout.trim()) {
         warnings.push(`Port ${newPort} is not allowed in ufw. You may lock yourself out!`);
       }
@@ -78,7 +77,8 @@ export const POST = handler(async (req: NextRequest) => {
 
   if (changes["PasswordAuthentication"] === "no") {
     try {
-      const { stdout } = await hostExec(
+      const { stdout } = await targetExec(
+        id,
         "ls ~/.ssh/authorized_keys /root/.ssh/authorized_keys 2>/dev/null | head -1"
       );
       if (!stdout.trim()) {
@@ -95,7 +95,7 @@ export const POST = handler(async (req: NextRequest) => {
 
   // Backup
   try {
-    await hostExec("cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak");
+    await targetExec(id, "cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak");
   } catch {}
 
   // Apply changes. Keys/values are already whitelisted (validateSshdChanges);
@@ -103,7 +103,8 @@ export const POST = handler(async (req: NextRequest) => {
   // depth so no value can ever break out of the shell command.
   for (const [key, value] of entries) {
     const line = `${key} ${value}`;
-    await hostExec(
+    await targetExec(
+      id,
       `grep -q ${JSON.stringify(`^${key}`)} /etc/ssh/sshd_config ` +
         `&& sed -i ${JSON.stringify(`s/^${key}.*/${line}/`)} /etc/ssh/sshd_config ` +
         `|| echo ${JSON.stringify(line)} >> /etc/ssh/sshd_config`
@@ -114,12 +115,12 @@ export const POST = handler(async (req: NextRequest) => {
   let configTest = "";
   let configOk = true;
   try {
-    const res = await hostExec("sshd -t 2>&1 || true");
+    const res = await targetExec(id, "sshd -t 2>&1 || true");
     configTest = res.stdout + res.stderr;
     if (res.stderr.includes("error")) {
       configOk = false;
       // Restore backup
-      await hostExec("cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config");
+      await targetExec(id, "cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config");
       return json({ ok: false, configTest, warnings, restored: true });
     }
   } catch {}
@@ -129,7 +130,8 @@ export const POST = handler(async (req: NextRequest) => {
 
   let reloaded = false;
   try {
-    await hostExec(
+    await targetExec(
+      id,
       "systemctl reload ssh 2>/dev/null || systemctl reload sshd 2>/dev/null || true"
     );
     reloaded = true;

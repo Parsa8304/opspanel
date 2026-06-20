@@ -9,7 +9,23 @@ import { COOKIE } from "./constants";
 export { COOKIE };
 export type Role = "ADMIN" | "ENGINEER" | "REVIEWER" | "READONLY";
 
-const SECRET = process.env.JWT_SECRET || "dev-secret";
+// Fail closed in production: a defaulted/short JWT secret lets anyone forge
+// admin sessions on a panel that can run root commands. In production we refuse
+// to start without a real secret; in dev/test we fall back to a known dev value
+// so local work and the test suite still boot.
+function resolveSecret(): string {
+  const s = process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === "production") {
+    if (!s || s.length < 32)
+      throw new Error(
+        "JWT_SECRET must be set (>=32 chars) in production. Refusing to start with a default secret."
+      );
+    return s;
+  }
+  return s || "dev-secret";
+}
+
+const SECRET = resolveSecret();
 const SESSION_TTL_SECONDS = 12 * 60 * 60; // 12h
 
 export interface SessionUser {

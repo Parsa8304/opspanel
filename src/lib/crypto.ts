@@ -7,6 +7,19 @@ import crypto from "crypto";
  */
 const MASTER = process.env.PANEL_MASTER_KEY || "";
 
+// Fail closed in production: a defaulted/missing master key means every secret
+// at rest (SSH keys, TOTP secrets, integration creds) is either undecryptable
+// or, worse, protected by a publicly-known key. Allow an unset key only in dev/
+// test so local work without secrets still boots.
+if (
+  process.env.NODE_ENV === "production" &&
+  MASTER.length < 16
+) {
+  throw new Error(
+    "PANEL_MASTER_KEY must be set (>=16 chars) in production. Refusing to start with a default/empty master key."
+  );
+}
+
 export function masterKeyConfigured(): boolean {
   return MASTER.length >= 16;
 }

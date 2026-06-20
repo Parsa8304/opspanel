@@ -40,8 +40,11 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://panel:panel@panel-postgres:5432/panel?schema=public
       REDIS_URL: redis://panel-redis:6379
-      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-market-navigator-panel-secret}
-      PANEL_MASTER_KEY: ${PANEL_MASTER_KEY:-dev-only-master-key-change-in-prod-32chars}
+      # No defaults: the app fails closed if these are unset. Provide them via a
+      # local .env (gitignored) or your secret manager. Generate with e.g.
+      #   openssl rand -hex 32
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required (>=32 chars)}
+      PANEL_MASTER_KEY: ${PANEL_MASTER_KEY:?PANEL_MASTER_KEY is required (>=16 chars)}
       DOCKER_SOCKET: /var/run/docker.sock
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
