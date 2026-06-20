@@ -14,7 +14,7 @@ import {
   ClipboardCheck, BarChart2, Sparkles,
   ShieldCheck, Bell, Plug, DollarSign, FileText, Search, Settings,
   ScrollText, Milestone, BookOpen, HardDrive, Globe2, CalendarClock,
-  GitFork, GitCompare, Share2, CloudUpload,
+  GitFork, GitCompare, Share2, CloudUpload, Router, Dot,
 } from "lucide-react";
 
 type NavKey = typeof NAV[number]["key"];
@@ -23,11 +23,11 @@ type NavKey = typeof NAV[number]["key"];
 const NAV_GROUPS: { en: string; fa: string; items: NavKey[] }[] = [
   { en: "Dashboard",         fa: "داشبورد",         items: ["overview"] },
   { en: "Operations",        fa: "عملیات",           items: ["containers", "server", "ports", "async", "logs", "scraper-flow", "runbooks", "depmap"] },
-  { en: "Delivery",          fa: "تحویل",            items: ["deployments", "deploy", "migration", "tests", "compare"] },
+  { en: "Delivery",          fa: "تحویل",            items: ["deployments", "deploy", "migration", "tests"] },
   { en: "Quality",           fa: "کیفیت",            items: ["qa", "benchmarks", "ai-quality"] },
   { en: "Security & Control",fa: "امنیت و کنترل",   items: ["access", "alerts", "integrations"] },
   { en: "Business",          fa: "کسب‌وکار",         items: ["billing", "reports", "discovery"] },
-  { en: "Infrastructure",    fa: "زیرساخت",          items: ["backup", "domains", "crons", "drift", "infra"] },
+  { en: "Infrastructure",    fa: "زیرساخت",          items: ["backup", "domains", "crons", "infra", "servers"] },
   { en: "System",            fa: "سیستم",            items: ["settings"] },
 ];
 
@@ -61,6 +61,7 @@ const NAV_ICON: Record<NavKey, React.ReactNode> = {
   compare:        <GitCompare size={15} />,
   depmap:         <Share2 size={15} />,
   infra:          <CloudUpload size={15} />,
+  servers:        <Router size={15} />,
 };
 
 /* ─── Shell ─────────────────────────────────────────────────────────────── */
@@ -69,6 +70,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const router = useRouter();
   const { data: me } = useSWR("/api/auth/me", fetcher);
+  const { data: serversData } = useSWR<{ servers: { id: string; name: string }[] }>(
+    "/api/servers", fetcher, { refreshInterval: 30000 }
+  );
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => {
@@ -139,18 +143,36 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   const active =
                     nav.href === "/" ? path === "/" : path.startsWith(nav.href);
                   return (
-                    <Link
-                      key={nav.key}
-                      href={nav.href}
-                      className={`sidebar-item${active ? " active" : ""}`}
-                    >
-                      <span className="sidebar-icon">
-                        {NAV_ICON[nav.key as NavKey]}
-                      </span>
-                      <span className="truncate min-w-0">
-                        {lang === "fa" ? nav.fa : nav.en}
-                      </span>
-                    </Link>
+                    <div key={nav.key}>
+                      <Link
+                        href={nav.href}
+                        className={`sidebar-item${active && nav.key !== "servers" ? " active" : ""}`}
+                      >
+                        <span className="sidebar-icon">
+                          {NAV_ICON[nav.key as NavKey]}
+                        </span>
+                        <span className="truncate min-w-0">
+                          {lang === "fa" ? nav.fa : nav.en}
+                        </span>
+                      </Link>
+                      {nav.key === "servers" && serversData?.servers?.map((s) => {
+                        const href = `/servers/${s.id}`;
+                        const subActive = path === href;
+                        return (
+                          <Link
+                            key={s.id}
+                            href={href}
+                            className={`sidebar-item${subActive ? " active" : ""}`}
+                            style={{ paddingInlineStart: 30 }}
+                          >
+                            <span className="sidebar-icon">
+                              <Dot size={15} />
+                            </span>
+                            <span className="truncate min-w-0">{s.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   );
                 })}
               </div>
