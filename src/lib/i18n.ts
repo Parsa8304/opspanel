@@ -30,6 +30,7 @@ export const NAV = [
   { key: "compare", href: "/compare", en: "Release Compare", fa: "مقایسه نسخه‌ها" },
   { key: "depmap", href: "/depmap", en: "Dependency Map", fa: "نقشه وابستگی‌ها" },
   { key: "infra", href: "/infra", en: "MN Infrastructure", fa: "زیرساخت MN" },
+  { key: "servers", href: "/servers", en: "Remote Servers", fa: "سرورهای دیگر" },
 ] as const;
 
 const DICT: Record<string, { en: string; fa: string }> = {

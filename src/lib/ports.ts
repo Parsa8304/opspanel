@@ -371,7 +371,8 @@ export async function reconcile(
     seenKeys.add(key);
     await prisma.portAllocation.upsert({
       where: {
-        hostName_port_protocol_iface: {
+        serverId_hostName_port_protocol_iface: {
+          serverId: "local",
           hostName,
           port: o.port,
           protocol: o.protocol,

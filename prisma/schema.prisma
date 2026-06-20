@@ -1,6 +1,3 @@
-// Market Navigator — Internal Tracking & Deployment Panel
-// Full data model covering all 11 sections.
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,47 +7,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ───────────────────────── Auth & Audit (Section 10) ─────────────────────────
-
-enum Role {
-  ADMIN
-  ENGINEER
-  REVIEWER
-  READONLY
-}
-
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String
-  passwordHash String
-  role         Role     @default(READONLY)
-  lastLoginAt  DateTime?
-  createdAt    DateTime @default(now())
-  totpSecret   String?
-  totpEnabled  Boolean  @default(false)
-
-  auditLogs         AuditLog[]
-  verifiedItems     RegressionItem[]
+  id                String           @id @default(cuid())
+  email             String           @unique
+  name              String
+  passwordHash      String
+  role              Role             @default(READONLY)
+  lastLoginAt       DateTime?
+  createdAt         DateTime         @default(now())
+  totpSecret        String?
+  totpEnabled       Boolean          @default(false)
   verifiedScenarios AccessScenario[]
+  reviewedSamples   AiSample[]
+  auditLogs         AuditLog[]
   deployments       Deployment[]
+  verifiedItems     RegressionItem[]
   releases          Release[]
   reports           Report[]
-  reviewedSamples   AiSample[]
   sessions          Session[]
 }
 
 model Session {
-  id          String    @id @default(cuid())
-  tokenId     String    @unique
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
-  lastSeenAt  DateTime  @default(now())
-  expiresAt   DateTime
-  ip          String?
-  userAgent   String?
-  revokedAt   DateTime?
+  id         String    @id @default(cuid())
+  tokenId    String    @unique
+  userId     String
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  expiresAt  DateTime
+  ip         String?
+  userAgent  String?
+  revokedAt  DateTime?
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tokenId])
@@ -59,12 +46,12 @@ model Session {
 model AuditLog {
   id        String   @id @default(cuid())
   userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
   action    String
   target    String?
   detail    Json?
   ip        String?
   createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@index([createdAt])
   @@index([userId])
@@ -77,47 +64,10 @@ model AccessScenario {
   status         CheckStatus @default(STALE)
   lastVerifiedAt DateTime?
   verifiedById   String?
-  verifiedBy     User?       @relation(fields: [verifiedById], references: [id])
   staleAfterDays Int         @default(30)
   notes          String?
   updatedAt      DateTime    @updatedAt
-}
-
-enum CheckStatus {
-  PASSING
-  FAILING
-  STALE
-}
-
-// ───────────────────────── Q/A Tracking (Section 2) ─────────────────────────
-
-enum QaModule {
-  LOGIN
-  PROJECT_MANAGEMENT
-  QUICK_REPORT
-  DECISION_ENGINE
-  GTM_STRATEGY
-  PITCH_DECK
-  PITCH_TO_VC
-  FIND_EXPERTS
-  AI_RESEARCH_ASSISTANT
-  ASYNC_PROCESSING
-  WEBSOCKET
-  STORAGE
-  SEARCH
-  EXTERNAL_INTEGRATIONS
-  AI_INTEGRATIONS
-  ACCESS_CONTROL
-  DEPLOYMENT
-  OVERALL_READINESS
-}
-
-enum Environment {
-  DEV
-  STAGING
-  DEMO
-  OPERATIONAL
-  PROD
+  verifiedBy     User?       @relation(fields: [verifiedById], references: [id])
 }
 
 model RegressionItem {
@@ -129,35 +79,21 @@ model RegressionItem {
   status         CheckStatus @default(STALE)
   lastVerifiedAt DateTime?
   verifiedById   String?
-  verifiedBy     User?       @relation(fields: [verifiedById], references: [id])
   staleAfterDays Int         @default(30)
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   evidence       Evidence[]
-}
-
-enum EvidenceType {
-  SCREENSHOT
-  VIDEO
-  TEST_OUTPUT
-  LOG_LINK
+  verifiedBy     User?       @relation(fields: [verifiedById], references: [id])
 }
 
 model Evidence {
   id               String         @id @default(cuid())
   regressionItemId String
-  regressionItem   RegressionItem @relation(fields: [regressionItemId], references: [id], onDelete: Cascade)
   type             EvidenceType
   url              String
   label            String?
   createdAt        DateTime       @default(now())
-}
-
-enum CoverageStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  BLOCKED
-  DONE
+  regressionItem   RegressionItem @relation(fields: [regressionItemId], references: [id], onDelete: Cascade)
 }
 
 model CoverageItem {
@@ -173,32 +109,29 @@ model CoverageItem {
   updatedAt DateTime       @updatedAt
 }
 
-// ──────────────────── External Integrations (Section 4) ──────────────────────
-
 model Integration {
-  id                  String   @id @default(cuid())
-  key                 String   @unique
+  id                  String                @id @default(cuid())
+  key                 String                @unique
   name                String
   category            String
-  enabled             Boolean  @default(false)
+  enabled             Boolean               @default(false)
   config              Json?
   credentialExpiresAt DateTime?
-  createdAt           DateTime @default(now())
-
-  calls     IntegrationCall[]
-  incidents IntegrationIncident[]
+  createdAt           DateTime              @default(now())
+  calls               IntegrationCall[]
+  incidents           IntegrationIncident[]
 }
 
 model IntegrationCall {
   id            String      @id @default(cuid())
   integrationId String
-  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   success       Boolean
   statusCode    Int?
   latencyMs     Int?
   costUsd       Float?
   error         String?
   createdAt     DateTime    @default(now())
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
 
   @@index([integrationId, createdAt])
 }
@@ -206,23 +139,12 @@ model IntegrationCall {
 model IntegrationIncident {
   id            String      @id @default(cuid())
   integrationId String
-  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   title         String
   description   String?
   severity      String      @default("minor")
   startedAt     DateTime    @default(now())
   resolvedAt    DateTime?
-}
-
-// ─────────────────── Async Pipeline Monitoring (Section 5) ───────────────────
-
-enum JobStatus {
-  PENDING
-  STARTED
-  SUCCESS
-  FAILURE
-  RETRY
-  DEAD
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
 }
 
 model JobRecord {
@@ -242,8 +164,6 @@ model JobRecord {
   @@index([status])
 }
 
-// ──────────────── Version & Deployment Tracking (Section 6) ──────────────────
-
 model Deployment {
   id           String      @id @default(cuid())
   environment  Environment
@@ -251,13 +171,13 @@ model Deployment {
   version      String?
   status       String      @default("active")
   deployedById String?
-  deployedBy   User?       @relation(fields: [deployedById], references: [id])
   rollbackOfId String?
   deployedAt   DateTime    @default(now())
   startedAt    DateTime?
   finishedAt   DateTime?
   durationMs   Int?
   logUrl       String?
+  deployedBy   User?       @relation(fields: [deployedById], references: [id])
 
   @@index([environment, deployedAt])
 }
@@ -268,38 +188,21 @@ model Release {
   commitSha    String
   changelog    String?
   deployedById String?
-  deployedBy   User?    @relation(fields: [deployedById], references: [id])
   date         DateTime @default(now())
-}
-
-// ──────────────────── Test Logs & Test Flow (Section 7) ──────────────────────
-
-enum TestType {
-  UNIT
-  INTEGRATION
-  E2E
-  API
-  FRONTEND
-  WORKER
-}
-
-enum TestCaseStatus {
-  PASSED
-  FAILED
-  SKIPPED
+  deployedBy   User?    @relation(fields: [deployedById], references: [id])
 }
 
 model TestRun {
-  id         String    @id @default(cuid())
+  id         String     @id @default(cuid())
   commitSha  String?
-  source     String    @default("manual")
+  source     String     @default("manual")
   ciUrl      String?
-  total      Int       @default(0)
-  passed     Int       @default(0)
-  failed     Int       @default(0)
-  skipped    Int       @default(0)
-  durationMs Int       @default(0)
-  startedAt  DateTime  @default(now())
+  total      Int        @default(0)
+  passed     Int        @default(0)
+  failed     Int        @default(0)
+  skipped    Int        @default(0)
+  durationMs Int        @default(0)
+  startedAt  DateTime   @default(now())
   finishedAt DateTime?
   cases      TestCase[]
 
@@ -310,7 +213,6 @@ model TestRun {
 model TestCase {
   id             String         @id @default(cuid())
   testRunId      String
-  testRun        TestRun        @relation(fields: [testRunId], references: [id], onDelete: Cascade)
   name           String
   classname      String?
   type           TestType       @default(UNIT)
@@ -318,6 +220,7 @@ model TestCase {
   durationMs     Int            @default(0)
   failureMessage String?
   failureTrace   String?
+  testRun        TestRun        @relation(fields: [testRunId], references: [id], onDelete: Cascade)
 
   @@index([name])
   @@index([testRunId])
@@ -332,8 +235,6 @@ model CoverageMetric {
 
   @@index([module, createdAt])
 }
-
-// ──────────────────── Code Benchmarks & Quality (Section 8) ──────────────────
 
 model CodeMetric {
   id             String   @id @default(cuid())
@@ -376,20 +277,6 @@ model AiCostMetric {
   @@index([module, createdAt])
 }
 
-// ─────────────────── AI Output Quality Tracking (Section 9) ──────────────────
-
-enum AiFlag {
-  NONE
-  HALLUCINATION
-  REFUSAL
-  ERROR
-}
-
-enum ReviewStatus {
-  PENDING
-  REVIEWED
-}
-
 model AiSample {
   id           String       @id @default(cuid())
   module       String
@@ -404,8 +291,8 @@ model AiSample {
   flag         AiFlag       @default(NONE)
   reviewStatus ReviewStatus @default(PENDING)
   reviewedById String?
-  reviewedBy   User?        @relation(fields: [reviewedById], references: [id])
   createdAt    DateTime     @default(now())
+  reviewedBy   User?        @relation(fields: [reviewedById], references: [id])
 
   @@index([module, createdAt])
 }
@@ -421,78 +308,55 @@ model AiRegressionCase {
   runs           AiRegressionRun[]
 }
 
-// ─────────────────── Prompt/version tracking ────────────────────
-
 model PromptVersion {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   module      String
   name        String
-  version     Int      @default(1)
+  version     Int       @default(1)
   template    String
-  variables   String[] @default([])
+  variables   String[]  @default([])
   notes       String?
   deployedAt  DateTime?
-  testResults Json?    // {passed, failed, avgScore}
+  testResults Json?
   archivedAt  DateTime?
   createdById String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@unique([module, name, version])
   @@index([module, createdAt])
 }
 
-// ─────────────────── Fallback model policies ────────────────────
-
-enum FallbackKind {
-  CHEAP_MODEL
-  HIGH_QUALITY_MODEL
-  LOCAL
-  DETERMINISTIC
-}
-
 model FallbackPolicy {
-  id                String      @id @default(cuid())
-  module            String      @unique
-  primaryModel      String
-  fallbackModel     String
-  fallbackKind      FallbackKind @default(CHEAP_MODEL)
-  triggerOnError    Boolean     @default(true)
-  triggerOnTimeout  Boolean     @default(false)
-  triggerOnHighCost Boolean     @default(false)
-  triggerOnLowQuality Boolean   @default(false)
-  maxRetries        Int         @default(1)
-  timeoutMs         Int?
-  costThresholdUsd  Float?
-  qualityThreshold  Float?
-  enabled           Boolean     @default(true)
-  notes             String?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  id                  String       @id @default(cuid())
+  module              String       @unique
+  primaryModel        String
+  fallbackModel       String
+  fallbackKind        FallbackKind @default(CHEAP_MODEL)
+  triggerOnError      Boolean      @default(true)
+  triggerOnTimeout    Boolean      @default(false)
+  triggerOnHighCost   Boolean      @default(false)
+  triggerOnLowQuality Boolean      @default(false)
+  maxRetries          Int          @default(1)
+  timeoutMs           Int?
+  costThresholdUsd    Float?
+  qualityThreshold    Float?
+  enabled             Boolean      @default(true)
+  notes               String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
 }
 
 model AiRegressionRun {
   id         String           @id @default(cuid())
   caseId     String
-  case       AiRegressionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
   model      String
   output     String
   costUsd    Float?
   latencyMs  Int?
   matchScore Float?
   createdAt  DateTime         @default(now())
-}
-
-// ───────────────────────── Report Generator (Section 11) ─────────────────────
-
-enum ReportMode {
-  INTERNAL
-  REVIEWER
-}
-
-enum ReportLang {
-  EN
-  FA
+  case       AiRegressionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
 }
 
 model Report {
@@ -504,13 +368,11 @@ model Report {
   sections    Json
   snapshot    Json
   createdById String?
-  createdBy   User?      @relation(fields: [createdById], references: [id])
   createdAt   DateTime   @default(now())
+  createdBy   User?      @relation(fields: [createdById], references: [id])
 
   @@index([createdAt])
 }
-
-// ───────────────────────── Settings (cross-cutting) ──────────────────────────
 
 model Setting {
   key       String   @id
@@ -518,199 +380,188 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
-// ═══════════════════════════ PHASE 2 ═══════════════════════════
+model RemoteServer {
+  id          String    @id @default(cuid())
+  name        String
+  host        String
+  port        Int       @default(22)
+  sshUser     String
+  privateKey  String // encrypted via lib/crypto.ts (v1:...)
+  passphrase  String? // encrypted via lib/crypto.ts, optional
+  fingerprint String? // SHA256 host key fingerprint, captured on first successful connect
+  tags        String[]  @default([])
+  lastOkAt    DateTime?
+  lastError   String?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-// ── Shared: background jobs (deploys, migrations, discovery, reconciliation) ──
-
-enum JobState {
-  QUEUED
-  RUNNING
-  SUCCEEDED
-  FAILED
-  ROLLED_BACK
-  CANCELLED
+  @@index([createdAt])
 }
 
 model BackgroundJob {
-  id         String   @id @default(cuid())
-  kind       String   // discovery | deploy | migration | reconciliation | portscan
-  label      String
-  state      JobState @default(QUEUED)
-  progress   Int      @default(0) // 0..100
-  params     Json?
-  result     Json?
-  error      String?
-  log        String   @default("")
+  id          String    @id @default(cuid())
+  kind        String
+  label       String
+  state       JobState  @default(QUEUED)
+  progress    Int       @default(0)
+  params      Json?
+  result      Json?
+  error       String?
+  log         String    @default("")
   createdById String?
-  createdAt  DateTime @default(now())
-  startedAt  DateTime?
-  finishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  finishedAt  DateTime?
 
   @@index([kind, createdAt])
   @@index([state])
 }
 
-// ── Section 15/17: Hosts & port allocations ──
-
 model Host {
-  name        String   @id
-  address     String
-  sshUser     String   @default("root")
-  sshPort     Int      @default(22)
-  sshKeyEnc   String?  // encrypted private key (crypto.ts)
-  os          String?
-  totalRamMb  Int?
-  totalCpu    Int?
-  totalDiskGb Int?
-  isLocal     Boolean  @default(false)
-  lastSeenAt  DateTime?
-  createdAt   DateTime @default(now())
-
-  ports      PortAllocation[]
-  migrationsFrom MigrationPlan[] @relation("MigrationSource")
-  migrationsTo   MigrationPlan[] @relation("MigrationTarget")
+  name           String           @id
+  address        String
+  sshUser        String           @default("root")
+  sshPort        Int              @default(22)
+  sshKeyEnc      String?
+  os             String?
+  totalRamMb     Int?
+  totalCpu       Int?
+  totalDiskGb    Int?
+  isLocal        Boolean          @default(false)
+  lastSeenAt     DateTime?
+  createdAt      DateTime         @default(now())
+  migrationsFrom MigrationPlan[]  @relation("MigrationSource")
+  migrationsTo   MigrationPlan[]  @relation("MigrationTarget")
+  ports          PortAllocation[]
 }
 
 model PortAllocation {
-  id          String   @id @default(cuid())
-  hostName    String
-  host        Host     @relation(fields: [hostName], references: [name], onDelete: Cascade)
-  port        Int
-  protocol    String   @default("tcp")
-  iface       String   @default("0.0.0.0") // bound interface
-  processName String?
-  serviceName String?
+  id            String   @id @default(cuid())
+  hostName      String
+  serverId      String   @default("local")
+  port          Int
+  protocol      String   @default("tcp")
+  iface         String   @default("0.0.0.0")
+  processName   String?
+  serviceName   String?
   containerName String?
-  discoveredVia String  @default("docker") // docker | netstat | manual
-  isPublic    Boolean  @default(false)
-  status      String   @default("active") // active | stale
-  firstSeen   DateTime @default(now())
-  lastSeen    DateTime @default(now())
+  discoveredVia String   @default("docker")
+  isPublic      Boolean  @default(false)
+  status        String   @default("active")
+  firstSeen     DateTime @default(now())
+  lastSeen      DateTime @default(now())
+  host          Host     @relation(fields: [hostName], references: [name], onDelete: Cascade)
 
-  @@unique([hostName, port, protocol, iface])
+  @@unique([serverId, hostName, port, protocol, iface])
   @@index([hostName])
+  @@index([serverId])
 }
 
-// ── Section 14: Auto-discovery proposals ──
-
 model DiscoveryProposal {
-  id          String   @id @default(cuid())
-  kind        String   // database | cache | queue | search | storage | service | integration | dependency
+  id          String    @id @default(cuid())
+  kind        String
   title       String
   description String
-  proposed    Json     // proposed config to apply on accept
-  evidence    Json?    // what discovery observed
-  status      String   @default("pending") // pending | accepted | rejected | superseded
+  proposed    Json
+  evidence    Json?
+  status      String    @default("pending")
   decidedById String?
   decidedAt   DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   @@index([status, createdAt])
 }
 
-// ── Section 13: Alerting ──
-
-enum AlertSeverity {
-  INFO
-  WARN
-  ERROR
-  CRITICAL
-}
-
 model AlertChannel {
-  id            String   @id @default(cuid())
-  type          String   // telegram | email | webhook
-  name          String
-  configEnc     String   // encrypted JSON {botToken, chatId, url, ...}
-  enabled       Boolean  @default(true)
-  minSeverity   AlertSeverity @default(INFO)
-  createdAt     DateTime @default(now())
-
-  events        AlertDelivery[]
+  id          String          @id @default(cuid())
+  type        String
+  name        String
+  configEnc   String
+  enabled     Boolean         @default(true)
+  minSeverity AlertSeverity   @default(INFO)
+  createdAt   DateTime        @default(now())
+  events      AlertDelivery[]
 }
 
 model AlertRule {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String
-  source        String   // container_logs | async | integration | billing_budget | billing_recon | tests | deploy | migration | qa_stale | access
-  containerName String?  // optional scope for container_logs
-  pattern       String?  // regex
+  source        String
+  containerName String?
+  pattern       String?
   threshold     Int?
   windowSec     Int?
   severity      AlertSeverity @default(ERROR)
-  cooldownSec   Int      @default(300)
-  enabled       Boolean  @default(true)
-  builtin       Boolean  @default(false)
+  cooldownSec   Int           @default(300)
+  enabled       Boolean       @default(true)
+  builtin       Boolean       @default(false)
   lastFiredAt   DateTime?
-  createdAt     DateTime @default(now())
-
+  createdAt     DateTime      @default(now())
   events        AlertEvent[]
 }
 
 model AlertEvent {
-  id           String   @id @default(cuid())
-  ruleId       String?
-  rule         AlertRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
-  severity     AlertSeverity
-  source       String
-  title        String
-  payload      Json?
-  suppressedCount Int   @default(0)
-  ackStatus    String   @default("open") // open | acked | snoozed
-  ackById      String?
-  ackedAt      DateTime?
-  snoozeUntil  DateTime?
-  notes        String?
-  createdAt    DateTime @default(now())
-
-  deliveries   AlertDelivery[]
+  id              String          @id @default(cuid())
+  ruleId          String?
+  severity        AlertSeverity
+  source          String
+  title           String
+  payload         Json?
+  suppressedCount Int             @default(0)
+  ackStatus       String          @default("open")
+  ackById         String?
+  ackedAt         DateTime?
+  snoozeUntil     DateTime?
+  notes           String?
+  createdAt       DateTime        @default(now())
+  deliveries      AlertDelivery[]
+  rule            AlertRule?      @relation(fields: [ruleId], references: [id])
 
   @@index([ackStatus, createdAt])
   @@index([createdAt])
 }
 
 model AlertDelivery {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   eventId     String
-  event       AlertEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
   channelId   String
-  channel     AlertChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  status      String   @default("pending") // pending | delivered | failed | queued
-  attempts    Int      @default(0)
+  status      String       @default("pending")
+  attempts    Int          @default(0)
   lastError   String?
   deliveredAt DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime     @default(now())
+  channel     AlertChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  event       AlertEvent   @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([status])
 }
 
-// ── Section 12: Billing & cost tracking ──
-
 model BillingEvent {
-  id            String   @id @default(cuid())
-  provider      String   // openrouter | gemini | crunchbase | ...
-  model         String?
-  endpoint      String?
-  generationId  String?  @unique
-  requestId     String?
-  requestAt     DateTime @default(now())
-  tokensIn      Int      @default(0)
-  tokensOut     Int      @default(0)
-  tokensReasoning Int    @default(0)
-  tokensCached  Int      @default(0)
-  unitCost      Float?
-  totalCost     Float    @default(0)
-  currency      String   @default("USD")
-  module        String   @default("unknown")
-  feature       String?  // sub-feature within a module
-  environment   String?  // DEV | STAGING | PROD — optional, set by caller
-  userId        String?
-  projectId     String?
-  isByok        Boolean  @default(false)
-  isFreeTier    Boolean  @default(false)
+  id                    String   @id @default(cuid())
+  provider              String
+  model                 String?
+  endpoint              String?
+  generationId          String?  @unique
+  requestId             String?
+  requestAt             DateTime @default(now())
+  tokensIn              Int      @default(0)
+  tokensOut             Int      @default(0)
+  tokensReasoning       Int      @default(0)
+  tokensCached          Int      @default(0)
+  unitCost              Float?
+  totalCost             Float    @default(0)
+  currency              String   @default("USD")
+  module                String   @default("unknown")
+  feature               String?
+  environment           String?
+  userId                String?
+  projectId             String?
+  isByok                Boolean  @default(false)
+  isFreeTier            Boolean  @default(false)
   upstreamInferenceCost Float?
-  rawMeta       Json?
-  createdAt     DateTime @default(now())
+  rawMeta               Json?
+  createdAt             DateTime @default(now())
 
   @@index([provider, requestAt])
   @@index([module, requestAt])
@@ -719,41 +570,41 @@ model BillingEvent {
 }
 
 model BillingBudget {
-  id          String   @id @default(cuid())
-  provider    String
-  period      String   // daily | weekly | monthly
-  limitAmount Float
-  currency    String   @default("USD")
-  thresholds  Int[]    @default([50, 80, 100])
-  actionOnBreach String @default("alert") // alert | pause
-  enabled     Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id             String   @id @default(cuid())
+  provider       String
+  period         String
+  limitAmount    Float
+  currency       String   @default("USD")
+  thresholds     Int[]    @default([50, 80, 100])
+  actionOnBreach String   @default("alert")
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
 
   @@unique([provider, period])
 }
 
 model ProviderPricing {
-  id            String   @id @default(cuid())
-  provider      String
-  model         String
-  inPricePerM   Float    // per 1M input tokens
-  outPricePerM  Float    // per 1M output tokens
+  id                String    @id @default(cuid())
+  provider          String
+  model             String
+  inPricePerM       Float
+  outPricePerM      Float
   cachedInPricePerM Float?
-  effectiveFrom DateTime @default(now())
-  effectiveTo   DateTime?
-  createdAt     DateTime @default(now())
+  effectiveFrom     DateTime  @default(now())
+  effectiveTo       DateTime?
+  createdAt         DateTime  @default(now())
 
   @@index([provider, model, effectiveFrom])
 }
 
 model ProviderCredential {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   provider      String
-  credType      String   // inference | management
-  keyEnc        String   // encrypted
+  credType      String
+  keyEnc        String
   scopeNotes    String?
   rotationDueAt DateTime?
-  createdAt     DateTime @default(now())
+  createdAt     DateTime  @default(now())
 
   @@unique([provider, credType])
 }
@@ -761,7 +612,7 @@ model ProviderCredential {
 model ModuleBudget {
   id          String   @id @default(cuid())
   module      String
-  period      String   // daily | weekly | monthly
+  period      String
   limitAmount Float
   currency    String   @default("USD")
   enabled     Boolean  @default(true)
@@ -774,14 +625,14 @@ model ModuleBudget {
 model ReconciliationRun {
   id            String   @id @default(cuid())
   provider      String
-  forDate       DateTime // the UTC day reconciled
+  forDate       DateTime
   capturedTotal Float
   providerTotal Float
   driftAbs      Float
   driftPct      Float
   flagged       Boolean  @default(false)
-  breakdown     Json?    // per-model discrepancy
-  status        String   @default("ok") // ok | drift | error
+  breakdown     Json?
+  status        String   @default("ok")
   error         String?
   createdAt     DateTime @default(now())
 
@@ -789,25 +640,12 @@ model ReconciliationRun {
   @@index([createdAt])
 }
 
-// ──────────────── QA Checklist per Release & Quality Gates (Section 7) ────────────────
-
-enum ChecklistItemKind {
-  MANUAL
-  AUTOMATED
-}
-
-enum ChecklistPriority {
-  P0
-  P1
-  P2
-}
-
 model ReleaseChecklist {
-  id          String      @id @default(cuid())
+  id          String                 @id @default(cuid())
   version     String
   environment Environment
   title       String?
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime               @default(now())
   items       ReleaseChecklistItem[]
 
   @@index([version, environment])
@@ -816,7 +654,6 @@ model ReleaseChecklist {
 model ReleaseChecklistItem {
   id          String            @id @default(cuid())
   checklistId String
-  checklist   ReleaseChecklist  @relation(fields: [checklistId], references: [id], onDelete: Cascade)
   title       String
   description String?
   kind        ChecklistItemKind @default(MANUAL)
@@ -828,6 +665,7 @@ model ReleaseChecklistItem {
   notes       String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
+  checklist   ReleaseChecklist  @relation(fields: [checklistId], references: [id], onDelete: Cascade)
 }
 
 model QualityGate {
@@ -841,91 +679,69 @@ model QualityGate {
   updatedAt       DateTime    @updatedAt
 }
 
-// ── Section 16: Deploy runs (Deployment model from Section 6 stays the record-of-truth) ──
-
 model DeployRun {
-  id            String   @id @default(cuid())
-  environment   Environment
-  commitSha     String
-  service       String?
-  strategy      String   @default("blue_green") // blue_green | rolling | recreate
-  state         JobState @default(QUEUED)
-  jobId         String?
-  migrations    Json?    // detected migrations + reversibility
-  rolledBack    Boolean  @default(false)
-  deploymentId  String?  // links to Deployment row on success
-  triggeredById String?
-  log           String   @default("")
-  startedAt     DateTime @default(now())
-  finishedAt    DateTime?
-  healthStatus  String   @default("pending") // pending | watching | healthy | degraded | error
-  healthPort    Int?
-
+  id               String            @id @default(cuid())
+  environment      Environment
+  commitSha        String
+  service          String?
+  strategy         String            @default("blue_green")
+  state            JobState          @default(QUEUED)
+  jobId            String?
+  migrations       Json?
+  rolledBack       Boolean           @default(false)
+  deploymentId     String?
+  triggeredById    String?
+  log              String            @default("")
+  startedAt        DateTime          @default(now())
+  finishedAt       DateTime?
+  healthStatus     String            @default("pending")
+  healthPort       Int?
   postDeployChecks PostDeployCheck[]
 
   @@index([environment, startedAt])
 }
 
 model PostDeployCheck {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   deployRunId String
-  deployRun   DeployRun @relation(fields: [deployRunId], references: [id])
   url         String
   httpStatus  Int?
   durationMs  Int?
   ok          Boolean
-  checkedAt   DateTime @default(now())
+  checkedAt   DateTime  @default(now())
   error       String?
+  deployRun   DeployRun @relation(fields: [deployRunId], references: [id])
 
   @@index([deployRunId, checkedAt])
 }
 
-// ── Section 17: Migration plans ──
-
 model MigrationPlan {
-  id            String   @id @default(cuid())
-  sourceHostName String
-  sourceHost    Host     @relation("MigrationSource", fields: [sourceHostName], references: [name])
-  targetHostName String
-  targetHost    Host     @relation("MigrationTarget", fields: [targetHostName], references: [name])
-  service       String
-  volumes       String[] @default([])
-  strategy      String   // snapshot | replicate | dump_restore
+  id               String    @id @default(cuid())
+  sourceHostName   String
+  targetHostName   String
+  service          String
+  volumes          String[]  @default([])
+  strategy         String
   expectedDowntime String?
-  status        String   @default("planned") // planned | preflight | in_progress | completed | failed | rolled_back | committed
-  jobId         String?
-  preflight     Json?
-  restorePoint  String?
-  log           String   @default("")
-  startedAt     DateTime?
-  completedAt   DateTime?
-  createdById   String?
-  createdAt     DateTime @default(now())
+  status           String    @default("planned")
+  jobId            String?
+  preflight        Json?
+  restorePoint     String?
+  log              String    @default("")
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdById      String?
+  createdAt        DateTime  @default(now())
+  sourceHost       Host      @relation("MigrationSource", fields: [sourceHostName], references: [name])
+  targetHost       Host      @relation("MigrationTarget", fields: [targetHostName], references: [name])
 
   @@index([status, createdAt])
-}
-
-// ────────────────────────── Backup & Restore ─────────────────────────────────
-
-enum BackupTargetKind {
-  DATABASE
-  VOLUME
-  CONFIG
-  UPLOAD
-  FULL
-}
-
-enum BackupStatus {
-  PENDING
-  RUNNING
-  SUCCESS
-  FAILED
-  EXPIRED
 }
 
 model BackupSchedule {
   id          String           @id @default(cuid())
   name        String
+  serverId    String           @default("local")
   targetKind  BackupTargetKind
   targetRef   String
   cronExpr    String
@@ -936,12 +752,14 @@ model BackupSchedule {
   nextRunAt   DateTime?
   createdAt   DateTime         @default(now())
   jobs        BackupJob[]
+
+  @@index([serverId])
 }
 
 model BackupJob {
   id            String           @id @default(cuid())
   scheduleId    String?
-  schedule      BackupSchedule?  @relation(fields: [scheduleId], references: [id])
+  serverId      String           @default("local")
   targetKind    BackupTargetKind
   targetRef     String
   status        BackupStatus     @default(PENDING)
@@ -955,28 +773,15 @@ model BackupJob {
   expiresAt     DateTime?
   triggeredById String?
   createdAt     DateTime         @default(now())
-}
+  schedule      BackupSchedule?  @relation(fields: [scheduleId], references: [id])
 
-// ──────────────────────── Domains & SSL ──────────────────────────────────────
-
-enum DnsStatus {
-  UNKNOWN
-  OK
-  MISMATCH
-  UNREACHABLE
-}
-
-enum SslStatus {
-  UNKNOWN
-  VALID
-  EXPIRING_SOON
-  EXPIRED
-  INVALID
+  @@index([serverId])
 }
 
 model Domain {
   id            String    @id @default(cuid())
   name          String    @unique
+  serverId      String    @default("local")
   service       String?
   proxyTarget   String?
   sslStatus     SslStatus @default(UNKNOWN)
@@ -989,24 +794,8 @@ model Domain {
   notes         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-}
 
-// ────────────────────── Runbook Library ──────────────────────────────────────
-
-enum RunbookCategory {
-  INCIDENT
-  DEPLOY
-  MAINTENANCE
-  SECURITY
-  DATABASE
-  NETWORK
-  GENERAL
-}
-
-enum RunbookRunStatus {
-  RUNNING
-  COMPLETED
-  ABORTED
+  @@index([serverId])
 }
 
 model Runbook {
@@ -1027,25 +816,206 @@ model Runbook {
 model RunbookRun {
   id            String           @id @default(cuid())
   runbookId     String
-  runbook       Runbook          @relation(fields: [runbookId], references: [id], onDelete: Cascade)
   status        RunbookRunStatus @default(RUNNING)
   triggeredById String?
   notes         String?
   stepProgress  Int              @default(0)
   startedAt     DateTime         @default(now())
   finishedAt    DateTime?
+  runbook       Runbook          @relation(fields: [runbookId], references: [id], onDelete: Cascade)
 }
-
-// ──────────────────────── Environment Drift Detection ────────────────────────
 
 model EnvSnapshot {
   id          String   @id @default(cuid())
-  environment String   // "production" | "staging" | "dev" | custom
-  service     String   // container/service name
+  environment String
+  service     String
   key         String
-  value       String?  // null = key exists but value is secret/masked
+  value       String?
   masked      Boolean  @default(false)
   capturedAt  DateTime @default(now())
 
   @@index([environment, service])
+}
+
+enum Role {
+  ADMIN
+  ENGINEER
+  REVIEWER
+  READONLY
+}
+
+enum CheckStatus {
+  PASSING
+  FAILING
+  STALE
+}
+
+enum QaModule {
+  LOGIN
+  PROJECT_MANAGEMENT
+  QUICK_REPORT
+  DECISION_ENGINE
+  GTM_STRATEGY
+  PITCH_DECK
+  PITCH_TO_VC
+  FIND_EXPERTS
+  AI_RESEARCH_ASSISTANT
+  ASYNC_PROCESSING
+  WEBSOCKET
+  STORAGE
+  SEARCH
+  EXTERNAL_INTEGRATIONS
+  AI_INTEGRATIONS
+  ACCESS_CONTROL
+  DEPLOYMENT
+  OVERALL_READINESS
+}
+
+enum Environment {
+  DEV
+  STAGING
+  DEMO
+  OPERATIONAL
+  PROD
+}
+
+enum EvidenceType {
+  SCREENSHOT
+  VIDEO
+  TEST_OUTPUT
+  LOG_LINK
+}
+
+enum CoverageStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
+enum JobStatus {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+  RETRY
+  DEAD
+}
+
+enum TestType {
+  UNIT
+  INTEGRATION
+  E2E
+  API
+  FRONTEND
+  WORKER
+}
+
+enum TestCaseStatus {
+  PASSED
+  FAILED
+  SKIPPED
+}
+
+enum AiFlag {
+  NONE
+  HALLUCINATION
+  REFUSAL
+  ERROR
+}
+
+enum ReviewStatus {
+  PENDING
+  REVIEWED
+}
+
+enum FallbackKind {
+  CHEAP_MODEL
+  HIGH_QUALITY_MODEL
+  LOCAL
+  DETERMINISTIC
+}
+
+enum ReportMode {
+  INTERNAL
+  REVIEWER
+}
+
+enum ReportLang {
+  EN
+  FA
+}
+
+enum JobState {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  ROLLED_BACK
+  CANCELLED
+}
+
+enum AlertSeverity {
+  INFO
+  WARN
+  ERROR
+  CRITICAL
+}
+
+enum ChecklistItemKind {
+  MANUAL
+  AUTOMATED
+}
+
+enum ChecklistPriority {
+  P0
+  P1
+  P2
+}
+
+enum BackupTargetKind {
+  DATABASE
+  VOLUME
+  CONFIG
+  UPLOAD
+  FULL
+}
+
+enum BackupStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  EXPIRED
+}
+
+enum DnsStatus {
+  UNKNOWN
+  OK
+  MISMATCH
+  UNREACHABLE
+}
+
+enum SslStatus {
+  UNKNOWN
+  VALID
+  EXPIRING_SOON
+  EXPIRED
+  INVALID
+}
+
+enum RunbookCategory {
+  INCIDENT
+  DEPLOY
+  MAINTENANCE
+  SECURITY
+  DATABASE
+  NETWORK
+  GENERAL
+}
+
+enum RunbookRunStatus {
+  RUNNING
+  COMPLETED
+  ABORTED
 }

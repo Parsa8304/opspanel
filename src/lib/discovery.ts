@@ -899,7 +899,8 @@ export async function applyProposalEffect(
       });
       await prisma.portAllocation.upsert({
         where: {
-          hostName_port_protocol_iface: {
+          serverId_hostName_port_protocol_iface: {
+            serverId: "local",
             hostName: p.hostName,
             port: p.port,
             protocol: p.protocol || "tcp",

@@ -56,7 +56,8 @@ test("reconcile persists rows, no duplicates on re-run, advances lastSeen, marks
   const now0 = new Date(Date.now() - 60_000);
   await prisma.portAllocation.upsert({
     where: {
-      hostName_port_protocol_iface: {
+      serverId_hostName_port_protocol_iface: {
+        serverId: "local",
         hostName: LOCAL_HOST,
         port: FAKE_PRIOR_PORT,
         protocol: "tcp",
@@ -94,7 +95,8 @@ test("reconcile persists rows, no duplicates on re-run, advances lastSeen, marks
   // The injected fake prior row must now be STALE, not deleted.
   const stale = await prisma.portAllocation.findUnique({
     where: {
-      hostName_port_protocol_iface: {
+      serverId_hostName_port_protocol_iface: {
+        serverId: "local",
         hostName: LOCAL_HOST,
         port: FAKE_PRIOR_PORT,
         protocol: "tcp",
@@ -132,7 +134,8 @@ test("detectConflicts flags two different services on same host+port", async () 
   // Two allocations, same port, different iface + different service.
   await prisma.portAllocation.upsert({
     where: {
-      hostName_port_protocol_iface: {
+      serverId_hostName_port_protocol_iface: {
+        serverId: "local",
         hostName: LOCAL_HOST,
         port: 58881,
         protocol: "tcp",
@@ -155,7 +158,8 @@ test("detectConflicts flags two different services on same host+port", async () 
   });
   await prisma.portAllocation.upsert({
     where: {
-      hostName_port_protocol_iface: {
+      serverId_hostName_port_protocol_iface: {
+        serverId: "local",
         hostName: LOCAL_HOST,
         port: 58881,
         protocol: "tcp",

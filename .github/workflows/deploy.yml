@@ -3,6 +3,12 @@ name: Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — pull & build but do NOT restart containers"
+        type: boolean
+        default: false
 
 jobs:
   deploy:
@@ -18,5 +24,14 @@ jobs:
             set -e
             cd /home/ubuntu/devops-panel
             git pull origin main
-            docker compose -f docker-compose.prod.yml up -d --build
-            docker image prune -f
+
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              echo "=== DRY RUN: building image only (no restart) ==="
+              docker compose -f docker-compose.prod.yml build --no-cache app
+              echo "=== Build OK. Containers NOT restarted. ==="
+            else
+              docker compose -f docker-compose.prod.yml up -d --build
+              docker image prune -f
+              echo "=== Deploy complete ==="
+              docker compose -f docker-compose.prod.yml ps
+            fi

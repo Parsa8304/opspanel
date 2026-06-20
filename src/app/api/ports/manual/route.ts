@@ -27,7 +27,8 @@ export const POST = handler(async (req: NextRequest) => {
   const now = new Date();
   const row = await prisma.portAllocation.upsert({
     where: {
-      hostName_port_protocol_iface: {
+      serverId_hostName_port_protocol_iface: {
+        serverId: "local",
         hostName: body.hostName,
         port: body.port,
         protocol,
